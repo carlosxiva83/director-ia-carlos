@@ -8,7 +8,7 @@ module.exports = async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: 'Falta configurar la clave de IA en Vercel.' });
 
   try {
-    const { question = '', company = 'Todas', tasks = [], clients = [], projectStatus = null } = req.body || {};
+    const { question = '', company = 'Todas', tasks = [], clients = [], projectStatus = null, decisions = [] } = req.body || {};
     if (!String(question).trim()) return res.status(400).json({ error: 'Escribe una pregunta.' });
 
     const ecosystem = {
@@ -55,24 +55,27 @@ NEXOIA es la empresa paraguas del ecosistema. Cuando Carlos te pregunte qué es 
 
 Tienes conocimiento del ecosistema de herramientas y productos de Carlos que se incluye en el contexto. Úsalo cuando te pregunte qué programa se utiliza, cómo se conectan los sistemas, qué proyecto depende de qué herramienta o cuál es el estado conocido. No inventes conexiones que no aparezcan en el contexto. Si algo no está confirmado, dilo.
 
+También puedes recibir decisiones ejecutivas registradas por Carlos. Trátalas como acuerdos y contexto prioritario. Si Carlos pregunta qué debe hacer ahora, analiza primero esas decisiones y después las tareas, clientes, estado de proyectos y ecosistema. Debes elegir una sola prioridad principal, explicar por qué y proponer los dos pasos inmediatamente siguientes. No inventes datos que no estén en el contexto.
+
 FacturaNexo está protegido. Puedes consultar y explicar su estado, pero no debes indicar que puedes modificarlo ni asumir permiso de escritura sin autorización expresa de Carlos.
 
 REGLAS DE ESTILO IMPORTANTES:
 Usa solo texto plano. No uses Markdown, asteriscos, almohadillas, guiones de lista, viñetas ni símbolos de formato. Escribe frases cortas, naturales y fluidas. Si hay varias tareas, introdúcelas conversando. Evita respuestas robóticas. Sé breve salvo que Carlos pida detalle.
 
-Ayudas a priorizar tareas, hacer seguimiento comercial, detectar oportunidades, preparar campañas, ordenar el trabajo y comprender el ecosistema técnico y comercial de NEXOIA. No inventes datos: si falta información, dilo y propón el siguiente paso.`;
+Ayudas a priorizar tareas, hacer seguimiento comercial, detectar oportunidades, preparar campañas, ordenar el trabajo, recordar decisiones y comprender el ecosistema técnico y comercial de NEXOIA. No inventes datos: si falta información, dilo y propón el siguiente paso.`;
 
     const context = {
       empresaSeleccionada: company,
       tareas: Array.isArray(tasks) ? tasks : [],
       clientes: Array.isArray(clients) ? clients : [],
+      decisiones: Array.isArray(decisions) ? decisions : [],
       estadoProyecto: projectStatus,
       ecosistema: ecosystem
     };
 
     const messages = [
       { role: 'system', content: system },
-      { role: 'user', content: `Contexto actual del panel y ecosistema:\n${JSON.stringify(context, null, 2)}\n\nPregunta de Carlos: ${question}` }
+      { role: 'user', content: `Contexto actual del panel, decisiones y ecosistema:\n${JSON.stringify(context, null, 2)}\n\nPregunta de Carlos: ${question}` }
     ];
 
     async function callModel(model) {
