@@ -1,0 +1,1 @@
+repairing Android app icon as binary PNG
