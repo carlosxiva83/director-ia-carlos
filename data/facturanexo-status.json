@@ -1,0 +1,28 @@
+{
+  "project": "FacturaNexo",
+  "mode": "read-only",
+  "source": "GitHub",
+  "repo": "carlosxiva83/facturanexo",
+  "branch": "main",
+  "detectedVersion": "v0.40",
+  "lastReadAt": "2026-08-23T14:55:00+02:00",
+  "latestCommit": {
+    "sha": "34a8eadff8fb1285de4af30d74073de4d254574c",
+    "message": "Corregir orden de carga del importador completo v0.40",
+    "date": "2026-08-23T11:52:01Z"
+  },
+  "recentActivity": [
+    "Corregir orden de carga del importador completo v0.40",
+    "Quitar importador antiguo de 16 productos y activar catálogo completo",
+    "Corregir visualización de fotos de productos importados",
+    "Importación completa paginada de catálogo web",
+    "Fijar botón Importar en HTML de Almacén"
+  ],
+  "safety": {
+    "canRead": true,
+    "canWrite": false,
+    "canCommit": false,
+    "canDeploy": false,
+    "requiresExplicitPermissionForAnyFutureWrite": true
+  }
+}
