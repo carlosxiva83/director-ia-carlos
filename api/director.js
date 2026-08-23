@@ -19,32 +19,52 @@ module.exports = async function handler(req, res) {
       clientes: Array.isArray(clients) ? clients : []
     };
 
-    const response = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'poolside/laguna-s-2.1-free',
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: `Contexto actual del panel:\n${JSON.stringify(context, null, 2)}\n\nPregunta de Carlos: ${question}` }
-        ],
-        temperature: 0.3,
-        max_tokens: 700
-      })
-    });
+    const messages = [
+      { role: 'system', content: system },
+      { role: 'user', content: `Contexto actual del panel:\n${JSON.stringify(context, null, 2)}\n\nPregunta de Carlos: ${question}` }
+    ];
 
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      console.error('AI Gateway error', response.status, data);
-      return res.status(502).json({ error: data?.error?.message || 'La IA no ha podido responder ahora mismo.' });
+    async function callModel(model) {
+      const response = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 0.3,
+          max_tokens: 700
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      return { response, data };
     }
 
-    const answer = data?.choices?.[0]?.message?.content;
-    if (!answer) return res.status(502).json({ error: 'La IA devolvió una respuesta vacía.' });
-    return res.status(200).json({ answer });
+    const models = [
+      'poolside/laguna-s-2.1-free',
+      'poolside/laguna-s-2.1-free',
+      'poolside/laguna-s-2.1'
+    ];
+
+    let lastError = 'La IA no ha podido responder ahora mismo.';
+
+    for (const model of models) {
+      const { response, data } = await callModel(model);
+      if (response.ok) {
+        const answer = data?.choices?.[0]?.message?.content;
+        if (answer) return res.status(200).json({ answer, model });
+        lastError = 'La IA devolvió una respuesta vacía.';
+        continue;
+      }
+      lastError = data?.error?.message || lastError;
+      console.error('AI Gateway error', model, response.status, data);
+      if (![429, 500, 502, 503, 504].includes(response.status)) break;
+      await new Promise(resolve => setTimeout(resolve, 450));
+    }
+
+    return res.status(502).json({ error: lastError });
   } catch (error) {
     console.error('Director IA error', error);
     return res.status(500).json({ error: 'Error interno del Director IA.' });
