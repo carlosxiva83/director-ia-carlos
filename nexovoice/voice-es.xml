@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say language="es-ES" voice="Google.es-ES-Chirp3-HD-Aoede">Hola, soy NexoVoice. Esta es una prueba en español de España. ¿En qué puedo ayudarte?</Say>
+  <Say language="es-ES" voice="Polly.Lucia">Hola Carlos. Soy Nexo Voice. Esta llamada está configurada en español de España.</Say>
+  <Pause length="1"/>
+  <Say language="es-ES" voice="Polly.Lucia">Si me escuchas en español, la configuración funciona correctamente.</Say>
 </Response>
