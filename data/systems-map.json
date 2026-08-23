@@ -1,0 +1,117 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-08-24",
+  "owner": "Carlos Gómez",
+  "rules": {
+    "FacturaNexo": "Solo lectura desde Director IA. No modificar código, configuración, base de datos ni despliegues sin autorización expresa de Carlos.",
+    "general": "El Director debe distinguir entre conocer/consultar un sistema y tener permiso para modificarlo. Nunca asumir permisos de escritura."
+  },
+  "tools": [
+    {
+      "name": "GitHub",
+      "type": "Código y versiones",
+      "purpose": "Repositorios, código fuente, historial de cambios y versiones de los proyectos.",
+      "status": "En uso",
+      "projects": ["Director IA", "FacturaNexo", "Citanexo y otros proyectos cuando estén conectados"]
+    },
+    {
+      "name": "Vercel",
+      "type": "Alojamiento y despliegue",
+      "purpose": "Publicar aplicaciones y webs, gestionar despliegues y dominios técnicos.",
+      "status": "En uso",
+      "projects": ["Director IA", "FacturaNexo", "Citanexo y aplicaciones web"]
+    },
+    {
+      "name": "Supabase",
+      "type": "Base de datos y autenticación",
+      "purpose": "Memoria en la nube, bases de datos, usuarios y autenticación. Director IA tiene un proyecto Supabase separado de FacturaNexo.",
+      "status": "Preparado / conexión de acceso aparcada temporalmente",
+      "projects": ["Director IA", "otros proyectos con bases de datos separadas"]
+    },
+    {
+      "name": "Twilio",
+      "type": "Telefonía y comunicaciones",
+      "purpose": "Números de teléfono, llamadas entrantes/salientes y conexión telefónica del asistente de voz.",
+      "status": "En configuración",
+      "projects": ["Nexo Voice / IA Voice"]
+    },
+    {
+      "name": "Nexo Voice / IA Voice",
+      "type": "Asistente de voz",
+      "purpose": "Asistente telefónico con voz natural para atender llamadas, conversar con clientes y automatizar atención telefónica.",
+      "status": "En desarrollo y conexión",
+      "projects": ["Nexo Voice"]
+    },
+    {
+      "name": "Vercel AI Gateway",
+      "type": "Conexión con modelos de IA",
+      "purpose": "Conecta Director IA con el modelo de inteligencia artificial usado para analizar datos y responder.",
+      "status": "En uso",
+      "projects": ["Director IA"]
+    },
+    {
+      "name": "ChatGPT",
+      "type": "Desarrollo y asistencia",
+      "purpose": "Diseño, programación, revisión, estrategia y soporte durante la creación de los productos.",
+      "status": "En uso",
+      "projects": ["Ecosistema completo"]
+    }
+  ],
+  "products": [
+    {
+      "name": "Director IA",
+      "purpose": "Centro de mando personal y asistente ejecutivo para proyectos, clientes, tareas, decisiones y conexiones.",
+      "tools": ["GitHub", "Vercel", "Vercel AI Gateway", "Supabase"],
+      "status": "Activo"
+    },
+    {
+      "name": "FacturaNexo",
+      "purpose": "Programa de facturación y gestión.",
+      "tools": ["GitHub", "Vercel"],
+      "status": "Activo",
+      "permission": "Solo lectura desde Director IA"
+    },
+    {
+      "name": "Citanexo",
+      "purpose": "Reservas y citas para negocios.",
+      "tools": ["Vercel", "GitHub"],
+      "status": "Activo / evolución"
+    },
+    {
+      "name": "ComandaNexo",
+      "purpose": "Pedidos desde móvil para hostelería, recogida/reparto y envío de comandas a cocina o barra.",
+      "tools": ["Web/app", "GitHub/Vercel cuando corresponda"],
+      "status": "En desarrollo"
+    },
+    {
+      "name": "FichaNexo",
+      "purpose": "Control y fichaje de trabajadores.",
+      "tools": ["Web/app"],
+      "status": "Planificado / desarrollo"
+    },
+    {
+      "name": "Nexo Voice / IA Voice",
+      "purpose": "Asistente de voz telefónico muy natural para empresas.",
+      "tools": ["Twilio", "IA de voz"],
+      "status": "En configuración ahora"
+    },
+    {
+      "name": "Hostelecan",
+      "purpose": "Negocio de maquinaria de hostelería y servicio técnico.",
+      "tools": ["Web", "marketing y automatización IA"],
+      "status": "Activo"
+    },
+    {
+      "name": "Tu Maquinaria Hostelería",
+      "purpose": "Proyecto comercial de maquinaria de hostelería.",
+      "tools": ["Web", "marketing y automatización IA"],
+      "status": "Activo"
+    },
+    {
+      "name": "Servicios Editoriales",
+      "purpose": "Servicio de creación, corrección, maquetación y publicación de libros.",
+      "tools": ["IA", "Amazon KDP", "marketing"],
+      "status": "Activo"
+    }
+  ]
+}
