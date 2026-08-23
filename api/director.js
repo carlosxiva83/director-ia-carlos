@@ -24,7 +24,8 @@ module.exports = async function handler(req, res) {
       reglas: {
         FacturaNexo: 'Solo lectura desde Director IA. No modificar código, configuración, base de datos ni despliegues sin autorización expresa de Carlos.',
         general: 'Conocer un sistema no significa tener permiso para modificarlo. Nunca asumir permisos de escritura.',
-        nexoia: 'Cuando Carlos pregunte qué es NEXOIA o qué productos tiene, explicar primero que NEXOIA es el ecosistema o empresa paraguas y después describir sus productos de forma sencilla, práctica y conectada.'
+        nexoia: 'Cuando Carlos pregunte qué es NEXOIA o qué productos tiene, explicar primero que NEXOIA es el ecosistema o empresa paraguas y después describir sus productos de forma sencilla, práctica y conectada.',
+        narravivo: 'Narravivo es un proyecto que Carlos está desarrollando. El Director debe conocerlo y ayudar a organizarlo, pero no debe asumir que forma parte de NEXOIA hasta que Carlos lo decida expresamente.'
       },
       herramientas: [
         { nombre: 'GitHub', funcion: 'Código fuente, repositorios, historial de cambios y versiones.', estado: 'En uso', proyectos: ['Director IA', 'FacturaNexo', 'CitaNexo y otros proyectos conectados'] },
@@ -43,6 +44,7 @@ module.exports = async function handler(req, res) {
         { nombre: 'FichaNexo', papel: 'Control horario y trabajadores', funcion: 'Sistema para registrar entradas, salidas, fichajes, jornada laboral y gestión de horarios de trabajadores.', estado: 'Planificado / desarrollo' },
         { nombre: 'Nexo Voice / IA Voice', papel: 'Atención telefónica con inteligencia artificial', funcion: 'Asistente de voz telefónico natural para atender llamadas, conversar con clientes, responder preguntas, recoger información, gestionar reservas y automatizar tareas de atención telefónica.', herramientas: ['Twilio', 'IA de voz'], estado: 'En configuración ahora' },
         { nombre: 'Trabajadores Digitales Nexo', papel: 'Automatización por funciones', funcion: 'Asistentes de inteligencia artificial especializados en atención al cliente, seguimiento comercial, marketing, administración, pedidos, organización y soporte.', estado: 'Línea de producto en desarrollo' },
+        { nombre: 'Narravivo', papel: 'Plataforma de creación de vídeos y avatares con inteligencia artificial', funcion: 'Proyecto web para que usuarios puedan crear vídeos y avatares con IA. Está planteado con registro e inicio de sesión, prueba gratuita, pagos, suscripciones y automatización del proceso de creación. Se está definiendo el modelo de monetización por vídeo y por planes de suscripción.', herramientas: ['IA de vídeo y avatares', 'Web', 'Pasarela de pago', 'Sistema de usuarios y suscripciones'], estado: 'En desarrollo', relacion: 'Proyecto digital de Carlos; no asumir que pertenece a NEXOIA hasta decisión expresa' },
         { nombre: 'Hostelecan', funcion: 'Maquinaria de hostelería y servicio técnico.', estado: 'Activo', relacion: 'Negocio que puede utilizar soluciones NEXOIA' },
         { nombre: 'Tu Maquinaria Hostelería', funcion: 'Proyecto comercial de maquinaria de hostelería.', estado: 'Activo', relacion: 'Negocio que puede utilizar soluciones NEXOIA' },
         { nombre: 'Servicios Editoriales', funcion: 'Creación, corrección, maquetación y publicación de libros.', herramientas: ['IA', 'Amazon KDP', 'marketing'], estado: 'Activo', relacion: 'Negocio que puede utilizar soluciones NEXOIA' }
@@ -55,6 +57,8 @@ NEXOIA es la empresa paraguas del ecosistema. Cuando Carlos te pregunte qué es 
 
 Tienes conocimiento del ecosistema de herramientas y productos de Carlos que se incluye en el contexto. Úsalo cuando te pregunte qué programa se utiliza, cómo se conectan los sistemas, qué proyecto depende de qué herramienta o cuál es el estado conocido. No inventes conexiones que no aparezcan en el contexto. Si algo no está confirmado, dilo.
 
+Narravivo es otro proyecto de Carlos que debes conocer: una plataforma web de creación de vídeos y avatares con IA, con registro, prueba gratuita, pagos, suscripciones y automatización. Su modelo comercial se está planteando por vídeo y por suscripción. No asumas que Narravivo forma parte de NEXOIA salvo que Carlos lo decida expresamente.
+
 También puedes recibir decisiones ejecutivas registradas por Carlos. Trátalas como acuerdos y contexto prioritario. Si Carlos pregunta qué debe hacer ahora, analiza primero esas decisiones y después las tareas, clientes, estado de proyectos y ecosistema. Debes elegir una sola prioridad principal, explicar por qué y proponer los dos pasos inmediatamente siguientes. No inventes datos que no estén en el contexto.
 
 FacturaNexo está protegido. Puedes consultar y explicar su estado, pero no debes indicar que puedes modificarlo ni asumir permiso de escritura sin autorización expresa de Carlos.
@@ -62,7 +66,7 @@ FacturaNexo está protegido. Puedes consultar y explicar su estado, pero no debe
 REGLAS DE ESTILO IMPORTANTES:
 Usa solo texto plano. No uses Markdown, asteriscos, almohadillas, guiones de lista, viñetas ni símbolos de formato. Escribe frases cortas, naturales y fluidas. Si hay varias tareas, introdúcelas conversando. Evita respuestas robóticas. Sé breve salvo que Carlos pida detalle.
 
-Ayudas a priorizar tareas, hacer seguimiento comercial, detectar oportunidades, preparar campañas, ordenar el trabajo, recordar decisiones y comprender el ecosistema técnico y comercial de NEXOIA. No inventes datos: si falta información, dilo y propón el siguiente paso.`;
+Ayudas a priorizar tareas, hacer seguimiento comercial, detectar oportunidades, preparar campañas, ordenar el trabajo, recordar decisiones y comprender el ecosistema técnico y comercial de NEXOIA y los demás proyectos de Carlos. No inventes datos: si falta información, dilo y propón el siguiente paso.`;
 
     const context = {
       empresaSeleccionada: company,
