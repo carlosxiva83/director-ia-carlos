@@ -1,10 +1,20 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "updatedAt": "2026-08-24",
   "owner": "Carlos Gómez",
+  "company": {
+    "name": "NEXOIA",
+    "type": "Empresa paraguas de soluciones tecnológicas e inteligencia artificial",
+    "definition": "NEXOIA es una empresa de soluciones tecnológicas e inteligencia artificial pensada para ayudar a autónomos, comercios y empresas a trabajar de una forma más sencilla, automatizada y eficiente. No es un único programa: es un ecosistema de herramientas especializadas que pueden funcionar por separado o conectarse entre sí.",
+    "mission": "Reducir tareas manuales, mejorar el control del negocio, automatizar procesos y mejorar la atención al cliente mediante software e inteligencia artificial.",
+    "slogan": "NEXOIA · Conectamos tu negocio con la inteligencia artificial.",
+    "ecosystemIdea": "Cada producto NEXO resuelve una necesidad concreta del negocio y Director IA actúa como centro de mando. A medida que evolucione el ecosistema, los productos podrán compartir información y coordinarse con permisos controlados.",
+    "example": "Un restaurante podría utilizar ComandaNexo para pedidos, CitaNexo para reservas, Nexo Voice para atender llamadas y Director IA para supervisar el conjunto desde un mismo lugar."
+  },
   "rules": {
     "FacturaNexo": "Solo lectura desde Director IA. No modificar código, configuración, base de datos ni despliegues sin autorización expresa de Carlos.",
-    "general": "El Director debe distinguir entre conocer/consultar un sistema y tener permiso para modificarlo. Nunca asumir permisos de escritura."
+    "general": "El Director debe distinguir entre conocer/consultar un sistema y tener permiso para modificarlo. Nunca asumir permisos de escritura.",
+    "nexoia": "Cuando Carlos pregunte qué es NEXOIA o qué productos tiene, explicar primero que NEXOIA es el ecosistema/empresa paraguas y después describir los productos de forma sencilla, práctica y conectada."
   },
   "tools": [
     {
@@ -12,14 +22,14 @@
       "type": "Código y versiones",
       "purpose": "Repositorios, código fuente, historial de cambios y versiones de los proyectos.",
       "status": "En uso",
-      "projects": ["Director IA", "FacturaNexo", "Citanexo y otros proyectos cuando estén conectados"]
+      "projects": ["Director IA", "FacturaNexo", "CitaNexo y otros proyectos cuando estén conectados"]
     },
     {
       "name": "Vercel",
       "type": "Alojamiento y despliegue",
       "purpose": "Publicar aplicaciones y webs, gestionar despliegues y dominios técnicos.",
       "status": "En uso",
-      "projects": ["Director IA", "FacturaNexo", "Citanexo y aplicaciones web"]
+      "projects": ["Director IA", "FacturaNexo", "CitaNexo y aplicaciones web"]
     },
     {
       "name": "Supabase",
@@ -60,58 +70,75 @@
   "products": [
     {
       "name": "Director IA",
-      "purpose": "Centro de mando personal y asistente ejecutivo para proyectos, clientes, tareas, decisiones y conexiones.",
+      "roleInNexoia": "Centro de mando del ecosistema",
+      "purpose": "Asistente ejecutivo que ayuda a controlar proyectos, clientes, tareas, prioridades, información de los distintos programas y decisiones del negocio.",
       "tools": ["GitHub", "Vercel", "Vercel AI Gateway", "Supabase"],
       "status": "Activo"
     },
     {
       "name": "FacturaNexo",
-      "purpose": "Programa de facturación y gestión.",
+      "roleInNexoia": "Facturación y administración",
+      "purpose": "Programa de facturación y gestión para clientes, productos, presupuestos, albaranes, facturas y procesos administrativos.",
       "tools": ["GitHub", "Vercel"],
       "status": "Activo",
       "permission": "Solo lectura desde Director IA"
     },
     {
-      "name": "Citanexo",
-      "purpose": "Reservas y citas para negocios.",
+      "name": "CitaNexo",
+      "aliases": ["Citanexo"],
+      "roleInNexoia": "Reservas y agenda",
+      "purpose": "Sistema de reservas y citas para negocios como peluquerías, clínicas, centros de estética, talleres y otros servicios con agenda. Permite gestionar horarios, servicios, trabajadores y disponibilidad.",
       "tools": ["Vercel", "GitHub"],
       "status": "Activo / evolución"
     },
     {
       "name": "ComandaNexo",
-      "purpose": "Pedidos desde móvil para hostelería, recogida/reparto y envío de comandas a cocina o barra.",
+      "roleInNexoia": "Pedidos y hostelería",
+      "purpose": "Solución para hostelería que permite consultar la carta y realizar pedidos desde el móvil para consumo, recogida o reparto, con posibilidad de enviar comandas a cocina o barra.",
       "tools": ["Web/app", "GitHub/Vercel cuando corresponda"],
       "status": "En desarrollo"
     },
     {
       "name": "FichaNexo",
-      "purpose": "Control y fichaje de trabajadores.",
+      "roleInNexoia": "Control horario y trabajadores",
+      "purpose": "Sistema para registrar entradas, salidas, fichajes, jornada laboral y gestión de horarios de trabajadores.",
       "tools": ["Web/app"],
       "status": "Planificado / desarrollo"
     },
     {
       "name": "Nexo Voice / IA Voice",
-      "purpose": "Asistente de voz telefónico muy natural para empresas.",
+      "roleInNexoia": "Atención telefónica con inteligencia artificial",
+      "purpose": "Asistente de voz telefónico natural para atender llamadas, conversar con clientes, responder preguntas, recoger información, gestionar reservas y automatizar tareas de atención telefónica.",
       "tools": ["Twilio", "IA de voz"],
       "status": "En configuración ahora"
+    },
+    {
+      "name": "Trabajadores Digitales Nexo",
+      "roleInNexoia": "Automatización por funciones",
+      "purpose": "Asistentes de inteligencia artificial especializados en tareas como atención al cliente, seguimiento comercial, marketing, administración, pedidos, organización y soporte.",
+      "tools": ["IA", "automatizaciones", "conectores según cada negocio"],
+      "status": "Línea de producto en desarrollo"
     },
     {
       "name": "Hostelecan",
       "purpose": "Negocio de maquinaria de hostelería y servicio técnico.",
       "tools": ["Web", "marketing y automatización IA"],
-      "status": "Activo"
+      "status": "Activo",
+      "relationship": "Negocio que puede utilizar soluciones del ecosistema NEXOIA"
     },
     {
       "name": "Tu Maquinaria Hostelería",
       "purpose": "Proyecto comercial de maquinaria de hostelería.",
       "tools": ["Web", "marketing y automatización IA"],
-      "status": "Activo"
+      "status": "Activo",
+      "relationship": "Negocio que puede utilizar soluciones del ecosistema NEXOIA"
     },
     {
       "name": "Servicios Editoriales",
       "purpose": "Servicio de creación, corrección, maquetación y publicación de libros.",
       "tools": ["IA", "Amazon KDP", "marketing"],
-      "status": "Activo"
+      "status": "Activo",
+      "relationship": "Negocio que puede utilizar soluciones del ecosistema NEXOIA"
     }
   ]
 }
