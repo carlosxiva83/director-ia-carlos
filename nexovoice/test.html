@@ -49,7 +49,7 @@ const errorEl=document.getElementById('error');
 function setStatus(text,live=false){statusEl.textContent=text;dot.classList.toggle('live',live)}
 function showError(text){errorEl.style.display='block';errorEl.textContent=text}
 function clearError(){errorEl.style.display='none';errorEl.textContent=''}
-function cleanup(){try{dc?.close()}catch{};try{pc?.close()}catch{};localStream?.getTracks().forEach(t=>t.stop());pc=null;dc=null;localStream=null;startBtn.disabled=false;stopBtn.disabled=true;setStatus('Listo para probar')}
+function cleanup(){try{dc?.close()}catch{};try{pc?.close()}catch{};localStream?.getTracks().forEach(t=>t.stop());try{remote.pause();remote.srcObject=null}catch{};pc=null;dc=null;localStream=null;startBtn.disabled=false;stopBtn.disabled=true;setStatus('Listo para probar')}
 startBtn.addEventListener('click',async()=>{
   startBtn.disabled=true;clearError();setStatus('Conectando…');
   try{
@@ -63,15 +63,17 @@ startBtn.addEventListener('click',async()=>{
       dc.send(JSON.stringify({type:'response.create',response:{output_modalities:['audio'],instructions:"Saluda de forma breve y natural. Di: 'Hola, soy Nexo Voice, el asistente virtual de la empresa. ¿En qué puedo ayudarte?'. Después escucha y mantén una conversación normal en español de España."}}));
     };
     dc.onmessage=e=>{try{const ev=JSON.parse(e.data);if(ev.type==='error'){console.error(ev);setStatus('Error de OpenAI');showError(JSON.stringify(ev.error||ev))}}catch{}};
-    pc.onconnectionstatechange=()=>{if(['failed','disconnected','closed'].includes(pc.connectionState)){setStatus('Conexión cerrada');}}
+    pc.onconnectionstatechange=()=>{if(['failed','disconnected','closed'].includes(pc.connectionState)){cleanup();}}
     const offer=await pc.createOffer();await pc.setLocalDescription(offer);
     const r=await fetch('/api/test-call',{method:'POST',headers:{'Content-Type':'application/sdp'},body:offer.sdp});
     const body=await r.text();
     if(!r.ok) throw new Error('Servidor '+r.status+': '+body);
     await pc.setRemoteDescription({type:'answer',sdp:body});
-  }catch(err){console.error(err);setStatus('No se pudo conectar');startBtn.disabled=false;showError(err?.message||String(err));alert('La prueba no ha conectado. Ahora verás debajo el error real para poder corregirlo.');}
+  }catch(err){console.error(err);cleanup();setStatus('No se pudo conectar');showError(err?.message||String(err));alert('La prueba no ha conectado. Ahora verás debajo el error real para poder corregirlo.');}
 });
 stopBtn.addEventListener('click',cleanup);
+window.addEventListener('pagehide',cleanup);
+window.addEventListener('beforeunload',cleanup);
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}
 </script>
 </body>
