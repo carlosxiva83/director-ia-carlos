@@ -1,49 +1,35 @@
 const OPENAI_API_URL = "https://api.openai.com/v1";
 
-const INSTRUCTIONS = `
-Eres Nexo Voice, un asistente telefónico profesional para empresas en España.
-Habla siempre en español de España, salvo que el usuario pida expresamente otro idioma.
-Habla de forma natural, cálida, cercana y profesional.
-Usa frases cortas y claras, como en una llamada real.
-Escucha al usuario y responde de forma útil y breve.
-No inventes horarios, precios, servicios, citas ni datos de clientes.
-Si falta un dato empresarial, dilo con naturalidad.
-Si no entiendes un nombre, teléfono, fecha u hora, pide confirmación.
-Si preguntan si eres una persona, indica claramente que eres un asistente virtual con inteligencia artificial.
-`;
-
-export const config = { api: { bodyParser: false } };
-
-async function readRawBody(req) {
-  const chunks = [];
-  for await (const chunk of req) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  return Buffer.concat(chunks).toString("utf8");
-}
-
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).send("method_not_allowed");
-  if (!process.env.OPENAI_API_KEY) return res.status(500).send("missing_openai_api_key");
+  if (req.method !== "POST") {
+    return res.status(405).send("method_not_allowed");
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(500).send("missing_openai_api_key");
+  }
 
   try {
-    const sdp = (await readRawBody(req)).trim();
+    // Vercel may expose application/sdp as a raw string or Buffer.
+    let sdp;
+    if (typeof req.body === "string") {
+      sdp = req.body;
+    } else if (Buffer.isBuffer(req.body)) {
+      sdp = req.body.toString("utf8");
+    } else if (req.body?.sdp) {
+      sdp = req.body.sdp;
+    }
+
     if (!sdp) return res.status(400).send("missing_sdp");
 
-    const response = await fetch(`${OPENAI_API_URL}/realtime/calls`, {
+    const model = process.env.NEXO_VOICE_MODEL || "gpt-realtime-2";
+    const response = await fetch(`${OPENAI_API_URL}/realtime/calls?model=${encodeURIComponent(model)}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/sdp"
       },
-      body: JSON.stringify({
-        sdp,
-        session: {
-          type: "realtime",
-          model: process.env.NEXO_VOICE_MODEL || "gpt-realtime-2",
-          output_modalities: ["audio"],
-          max_output_tokens: 700,
-          instructions: INSTRUCTIONS
-        }
-      })
+      body: sdp
     });
 
     const answer = await response.text();
