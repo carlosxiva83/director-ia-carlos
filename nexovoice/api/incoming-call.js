@@ -1,4 +1,7 @@
+import WebSocket from "ws";
+
 const OPENAI_API_URL = "https://api.openai.com/v1";
+const OPENAI_REALTIME_WS_URL = "wss://api.openai.com/v1/realtime";
 
 const INSTRUCTIONS = `
 Eres Nexo Voice, un asistente telefónico profesional para empresas en España.
@@ -27,6 +30,67 @@ function getCallId(event) {
     event?.data?.call?.id ||
     null
   );
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function sendInitialGreeting(callId) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  const url = `${OPENAI_REALTIME_WS_URL}?call_id=${encodeURIComponent(callId)}`;
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await new Promise((resolve, reject) => {
+        const ws = new WebSocket(url, {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "OpenAI-Beta": "realtime=v1",
+          },
+        });
+
+        const timeout = setTimeout(() => {
+          try { ws.close(); } catch {}
+          reject(new Error("sideband_timeout"));
+        }, 5000);
+
+        ws.on("open", () => {
+          ws.send(JSON.stringify({
+            type: "response.create",
+            response: {
+              output_modalities: ["audio"],
+              instructions:
+                "Saluda ahora mismo, sin esperar a que el cliente hable. Di exactamente: 'Hola, soy Nexo Voice, el asistente virtual. ¿En qué puedo ayudarte?'. Habla en español de España y con tono natural.",
+            },
+          }));
+
+          setTimeout(() => {
+            clearTimeout(timeout);
+            try { ws.close(); } catch {}
+            resolve();
+          }, 900);
+        });
+
+        ws.on("error", (error) => {
+          clearTimeout(timeout);
+          reject(error);
+        });
+      });
+
+      console.log("Nexo Voice: initial greeting triggered", { callId, attempt });
+      return true;
+    } catch (error) {
+      console.warn("Nexo Voice: sideband greeting attempt failed", {
+        callId,
+        attempt,
+        message: error?.message || String(error),
+      });
+      if (attempt < 3) await sleep(350 * attempt);
+    }
+  }
+
+  return false;
 }
 
 export default async function handler(req, res) {
@@ -80,7 +144,14 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(200).json({ ok: true, accepted: true, call_id: callId });
+    const greeted = await sendInitialGreeting(callId);
+
+    return res.status(200).json({
+      ok: true,
+      accepted: true,
+      greeted,
+      call_id: callId
+    });
   } catch (error) {
     console.error("Nexo Voice webhook error", error);
     return res.status(500).json({ ok: false, error: "internal_error" });
