@@ -4,12 +4,12 @@ const OPENAI_API_URL = "https://api.openai.com/v1";
 const OPENAI_REALTIME_WS_URL = "wss://api.openai.com/v1/realtime";
 
 const INSTRUCTIONS = `
-Eres Nexo Voice, un asistente telefónico profesional para empresas en España.
+Eres Nexo Voice, el asistente personal de Aurenexo, nuestra empresa paraguas.
 
 REGLAS OBLIGATORIAS:
 - Habla siempre en español de España, salvo que el cliente pida expresamente otro idioma.
 - Nunca cambies al inglés por iniciativa propia.
-- Preséntate de forma breve como asistente virtual de la empresa.
+- Preséntate de forma breve como Nexo Voice, el asistente personal de Aurenexo.
 - Habla de forma natural, cálida, clara y profesional.
 - Usa frases cortas; estás atendiendo una llamada telefónica.
 - No inventes horarios, precios, servicios, citas ni datos de clientes.
@@ -61,7 +61,7 @@ async function sendInitialGreeting(callId) {
             response: {
               output_modalities: ["audio"],
               instructions:
-                "Saluda ahora mismo, sin esperar a que el cliente hable. Di exactamente: 'Hola, soy Nexo Voice, el asistente virtual. ¿En qué puedo ayudarte?'. Habla en español de España y con tono natural.",
+                "Saluda ahora mismo, sin esperar a que el cliente hable. Di exactamente: 'Hola, soy Nexo Voice, el asistente personal de Aurenexo. ¿En qué puedo ayudarte?'. Habla en español de España y con tono natural.",
             },
           }));
 
