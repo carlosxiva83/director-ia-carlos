@@ -10,6 +10,7 @@ function normalize(value=''){
 }
 
 const STOP=new Set(['de','del','la','las','el','los','un','una','unos','unas','para','por','con','que','hay','tenéis','teneis','tiene','quiero','busco','necesito','linea','línea']);
+const DEFAULT_DELIVERY='24-72 horas';
 
 function usefulTokens(q){
   return normalize(q).split(' ').filter(t=>t.length>1&&!STOP.has(t));
@@ -29,7 +30,9 @@ function mapProduct(p){
     price:productPrice(p),
     currency:p.prices?.currency_code||'EUR',
     in_stock:typeof p.is_in_stock==='boolean'?p.is_in_stock:null,
-    permalink:p.permalink||null
+    permalink:p.permalink||null,
+    delivery_window:DEFAULT_DELIVERY,
+    delivery_source:'Hostelecan: plazo habitual cuando no exista un plazo específico distinto para el producto'
   };
 }
 
@@ -69,11 +72,8 @@ export default async function handler(req,res){
     add(q);
     add(tokens.join(' '));
 
-    // Las medidas/modelos suelen ser el dato más discriminante: 50x50, CH400, ST400B, etc.
     for(const t of tokens.filter(t=>/\d/.test(t))) add(t);
-    // Después prueba las palabras significativas una a una: lavavajillas, cordoba, horno...
     for(const t of tokens.filter(t=>!/^\d/.test(t))) add(t);
-    // Y combinaciones cortas para no depender del título exacto de WooCommerce.
     if(tokens.length>=2){
       for(let i=0;i<tokens.length;i++){
         for(let j=i+1;j<tokens.length;j++) add(tokens[i]+' '+tokens[j]);
@@ -85,7 +85,6 @@ export default async function handler(req,res){
       let rows=[];
       try{rows=await searchStore(term)}catch(e){if(!found.size) throw e;}
       for(const row of rows) found.set(row.id,row);
-      // Si ya tenemos un conjunto amplio, no hace falta seguir castigando la web.
       if(found.size>=40) break;
     }
 
@@ -100,9 +99,10 @@ export default async function handler(req,res){
     return res.status(200).json({
       query:q,
       approx_price:approx,
+      default_delivery_window:DEFAULT_DELIVERY,
       products,
       searched_terms:attempts.slice(0,8),
-      note:'La búsqueda combina términos y tolera títulos más largos. in_stock es el estado público de la tienda web y no confirma por sí solo una unidad física en almacén.'
+      note:'El plazo habitual de Hostelecan es 24-72 horas cuando no haya un plazo específico distinto para el producto. in_stock es el estado público de la tienda online.'
     });
   }catch(e){
     return res.status(502).json({error:'No se pudo consultar el catálogo público de Hostelecan.'});
