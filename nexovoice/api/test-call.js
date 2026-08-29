@@ -1,5 +1,19 @@
 const OPENAI_API_URL = "https://api.openai.com/v1";
 
+export const config = {
+  api: {
+    bodyParser: false
+  }
+};
+
+async function readRawBody(req) {
+  const chunks = [];
+  for await (const chunk of req) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).send("method_not_allowed");
@@ -10,17 +24,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Vercel may expose application/sdp as a raw string or Buffer.
-    let sdp;
-    if (typeof req.body === "string") {
-      sdp = req.body;
-    } else if (Buffer.isBuffer(req.body)) {
-      sdp = req.body.toString("utf8");
-    } else if (req.body?.sdp) {
-      sdp = req.body.sdp;
+    const sdp = await readRawBody(req);
+    if (!sdp || !sdp.includes("v=0")) {
+      return res.status(400).send("missing_sdp");
     }
-
-    if (!sdp) return res.status(400).send("missing_sdp");
 
     const model = process.env.NEXO_VOICE_MODEL || "gpt-realtime-2";
     const response = await fetch(`${OPENAI_API_URL}/realtime/calls?model=${encodeURIComponent(model)}`, {
