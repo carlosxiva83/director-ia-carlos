@@ -12,17 +12,20 @@ Si no entiendes un nombre, teléfono, fecha u hora, pide confirmación.
 Si preguntan si eres una persona, indica claramente que eres un asistente virtual con inteligencia artificial.
 `;
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).send("method_not_allowed");
-  }
+export const config = { api: { bodyParser: false } };
 
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).send("missing_openai_api_key");
-  }
+async function readRawBody(req) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).send("method_not_allowed");
+  if (!process.env.OPENAI_API_KEY) return res.status(500).send("missing_openai_api_key");
 
   try {
-    const sdp = typeof req.body === "string" ? req.body : req.body?.sdp;
+    const sdp = (await readRawBody(req)).trim();
     if (!sdp) return res.status(400).send("missing_sdp");
 
     const response = await fetch(`${OPENAI_API_URL}/realtime/calls`, {
