@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#07111f" />
+  <title>Nexo Voice · Hostelecan</title>
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:dark}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#17304c 0,#07111f 48%,#02060c 100%);color:#fff;padding:22px;display:grid;place-items:center}
+    .wrap{width:min(680px,100%)}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-weight:800;letter-spacing:.08em}.pill{font-size:12px;padding:8px 10px;border:1px solid rgba(255,255,255,.16);border-radius:999px;opacity:.8}
+    .card{background:rgba(8,20,36,.88);border:1px solid rgba(255,255,255,.12);border-radius:28px;padding:28px;box-shadow:0 28px 80px rgba(0,0,0,.35)}h1{font-size:34px;margin:0 0 8px}.sub{opacity:.72;line-height:1.5;margin:0 0 22px}
+    .areas{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}.area{padding:13px;border-radius:15px;background:rgba(255,255,255,.055);font-size:14px}.status{display:flex;gap:10px;align-items:center;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.06);margin-bottom:18px}.dot{width:11px;height:11px;border-radius:50%;background:#64748b}.dot.live{background:#22c55e;box-shadow:0 0 0 6px rgba(34,197,94,.13)}
+    button{width:100%;border:0;border-radius:18px;padding:17px;font-size:17px;font-weight:800;cursor:pointer}#start{background:#fff;color:#07111f}#stop{margin-top:10px;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12)}button:disabled{opacity:.45}.hint{font-size:13px;opacity:.55;text-align:center;margin-top:16px}#error{display:none;margin-top:14px;padding:12px;border-radius:14px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);font-size:13px;word-break:break-word}audio{display:none}
+    @media(max-width:540px){.areas{grid-template-columns:1fr}.card{padding:22px}h1{font-size:30px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top"><div class="brand">NEXO VOICE</div><div class="pill">Perfil Hostelecan</div></div>
+    <section class="card">
+      <h1>Recepción inteligente para Hostelecan</h1>
+      <p class="sub">Esta demo identifica el motivo de la llamada y adapta las preguntas al departamento adecuado.</p>
+      <div class="areas"><div class="area">🛠️ Servicio técnico</div><div class="area">🧾 Administración</div><div class="area">💼 Comercial</div><div class="area">💬 Consultas generales</div></div>
+      <div class="status"><span id="dot" class="dot"></span><span id="status">Listo para probar</span></div>
+      <button id="start">🎙️ Empezar conversación</button>
+      <button id="stop" disabled>Finalizar prueba</button>
+      <div id="error"></div>
+      <audio id="remote" autoplay></audio>
+      <p class="hint">Prueba frases como “tengo una máquina averiada”, “quiero un presupuesto” o “tengo una duda con una factura”.</p>
+    </section>
+  </main>
+<script>
+let pc,dc,localStream;
+const startBtn=document.getElementById('start'),stopBtn=document.getElementById('stop'),statusEl=document.getElementById('status'),dot=document.getElementById('dot'),remote=document.getElementById('remote'),errorEl=document.getElementById('error');
+const VOICE_STYLE=`Habla siempre en español de España. Suena como una recepcionista real al teléfono: femenina, cálida, cercana, segura y profesional. Evita tono robótico, de locución o excesivamente perfecto. Usa frases cortas, ritmo natural, pequeñas variaciones de entonación y pausas breves. No recites listas salvo que sea imprescindible.`;
+let PROFILE=null;
+function setStatus(t,live=false){statusEl.textContent=t;dot.classList.toggle('live',live)}function showError(t){errorEl.style.display='block';errorEl.textContent=t}function clearError(){errorEl.style.display='none';errorEl.textContent=''}
+function cleanup(){try{dc?.close()}catch{};try{pc?.close()}catch{};localStream?.getTracks().forEach(t=>t.stop());try{remote.pause();remote.srcObject=null}catch{};pc=null;dc=null;localStream=null;startBtn.disabled=false;stopBtn.disabled=true;setStatus('Listo para probar')}
+async function loadProfile(){if(PROFILE)return PROFILE;const r=await fetch('/profiles/hostelecan.json',{cache:'no-store'});if(!r.ok)throw new Error('No se pudo cargar el perfil de Hostelecan');PROFILE=await r.json();return PROFILE}
+function buildInstructions(p){return `${VOICE_STYLE}\n\nEres Nexo Voice y trabajas para ${p.company_name}. ${p.business_context}\n\nDEPARTAMENTOS:\n${p.departments.map(d=>`- ${d.name}: reconoce motivos como ${d.intent_examples.join(', ')}. Recoge cuando corresponda: ${d.collect.join(', ')}.`).join('\n')}\n\nREGLAS:\n${p.rules.map(r=>'- '+r).join('\n')}`}
+startBtn.addEventListener('click',async()=>{startBtn.disabled=true;clearError();setStatus('Conectando…');try{const p=await loadProfile();localStream=await navigator.mediaDevices.getUserMedia({audio:true});pc=new RTCPeerConnection();pc.ontrack=e=>{remote.srcObject=e.streams[0];remote.play().catch(()=>{})};localStream.getTracks().forEach(track=>pc.addTrack(track,localStream));dc=pc.createDataChannel('oai-events');dc.onopen=()=>{setStatus('Nexo Voice está escuchando',true);stopBtn.disabled=false;dc.send(JSON.stringify({type:'session.update',session:{type:'realtime',instructions:buildInstructions(p),audio:{output:{voice:'marin'}}}}));setTimeout(()=>{if(dc?.readyState==='open')dc.send(JSON.stringify({type:'response.create',response:{output_modalities:['audio'],instructions:`Saluda de forma breve y natural. Di exactamente: '${p.greeting}'. Después escucha al cliente y actúa según el perfil de Hostelecan.`}}))},150)};dc.onmessage=e=>{try{const ev=JSON.parse(e.data);if(ev.type==='error'){setStatus('Error de OpenAI');showError(JSON.stringify(ev.error||ev))}}catch{}};pc.onconnectionstatechange=()=>{if(['failed','disconnected','closed'].includes(pc.connectionState))cleanup()};const offer=await pc.createOffer();await pc.setLocalDescription(offer);const r=await fetch('/api/test-call',{method:'POST',headers:{'Content-Type':'application/sdp'},body:offer.sdp});const body=await r.text();if(!r.ok)throw new Error('Servidor '+r.status+': '+body);await pc.setRemoteDescription({type:'answer',sdp:body})}catch(err){cleanup();setStatus('No se pudo conectar');showError(err?.message||String(err))}});
+stopBtn.addEventListener('click',cleanup);window.addEventListener('pagehide',cleanup);window.addEventListener('beforeunload',cleanup);
+</script>
+</body>
+</html>
