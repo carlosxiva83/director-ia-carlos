@@ -2,19 +2,20 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Nexo Voice</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#07111f" />
+  <title>Nexo Voice · Atención telefónica con IA</title>
+  <meta name="description" content="Nexo Voice atiende llamadas, entiende el motivo, recoge datos y dirige cada consulta al área adecuada." />
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b0b0b;color:#fff;display:grid;place-items:center;min-height:100vh;margin:0;padding:24px}
-    .card{max-width:620px;width:100%;border:1px solid #2b2b2b;border-radius:24px;padding:32px;background:#121212;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-    h1{margin:0 0 12px;font-size:42px} p{color:#c9c9c9;line-height:1.55}.ok{display:inline-block;margin-top:18px;padding:10px 14px;border:1px solid #3a3a3a;border-radius:999px;color:#fff}
+    :root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:dark}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#050a12;color:#fff}.shell{width:min(1120px,calc(100% - 36px));margin:auto}.nav{height:74px;display:flex;align-items:center;justify-content:space-between}.brand{font-weight:900;letter-spacing:.12em}.nav a{color:#fff;text-decoration:none}.hero{padding:74px 0 62px;background:radial-gradient(circle at 70% 10%,#1b3d61 0,transparent 38%)}.eyebrow{font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:.65}.hero h1{font-size:clamp(44px,8vw,84px);line-height:.98;max-width:900px;margin:14px 0 22px}.hero p{font-size:20px;line-height:1.55;max-width:760px;color:#b8c5d5}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}.btn{display:inline-block;padding:15px 20px;border-radius:16px;font-weight:800;text-decoration:none}.primary{background:#fff;color:#07111f}.secondary{border:1px solid rgba(255,255,255,.18);color:#fff;background:rgba(255,255,255,.05)}.section{padding:72px 0}.section h2{font-size:38px;margin:0 0 12px}.section>div>p{color:#9fb0c4;max-width:720px;line-height:1.6}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}.card{padding:24px;border:1px solid rgba(255,255,255,.1);border-radius:22px;background:#0a1320}.card h3{margin:0 0 10px;font-size:20px}.card p{margin:0;color:#9fb0c4;line-height:1.55}.dark{background:#07111f}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px}.step{padding:20px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}.num{font-size:12px;opacity:.55;margin-bottom:10px}.pilot{display:flex;justify-content:space-between;gap:24px;align-items:center;padding:30px;border-radius:26px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(135deg,#10233a,#09111d)}.pilot p{color:#aebdce;line-height:1.55}.footer{padding:40px 0 60px;color:#75879a;font-size:14px}@media(max-width:800px){.grid,.flow{grid-template-columns:1fr}.pilot{display:block}.pilot .actions{margin-top:20px}.hero{padding-top:44px}.section{padding:54px 0}}
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>Nexo Voice</h1>
-    <p>Asistente telefónico con inteligencia artificial. Servicio desplegado y preparado para pruebas de voz en español.</p>
-    <div class="ok">Servicio online</div>
-  </main>
+  <div class="shell nav"><div class="brand">NEXO VOICE</div><a href="#demo">Probar ahora</a></div>
+  <header class="hero"><div class="shell"><div class="eyebrow">Atención telefónica con inteligencia artificial</div><h1>Tu empresa contesta. Incluso cuando tú no puedes.</h1><p>Nexo Voice atiende llamadas, entiende qué necesita el cliente, hace las preguntas adecuadas y dirige cada caso al departamento correcto.</p><div class="actions"><a class="btn primary" href="/test.html">Probar Nexo Voice</a><a class="btn secondary" href="/hostelecan.html">Ver piloto Hostelecan</a></div></div></header>
+  <section class="section dark"><div class="shell"><h2>No es una voz genérica</h2><p>Cada negocio trabaja con su propio perfil: información de empresa, departamentos, servicios, reglas, preguntas y acciones.</p><div class="grid"><article class="card"><h3>Habla como tu empresa</h3><p>Personalidad, tono y respuestas adaptadas al negocio y al tipo de cliente.</p></article><article class="card"><h3>Entiende el motivo</h3><p>Detecta si la llamada es comercial, técnica, administrativa o una consulta general.</p></article><article class="card"><h3>Actúa</h3><p>Puede recoger datos, preparar avisos, consultar sistemas y, cuando se configure, transferir a una persona.</p></article></div></div></section>
+  <section class="section"><div class="shell"><h2>Una misma tecnología. Muchos negocios.</h2><p>Mantenemos una base central de Nexo Voice y encima creamos perfiles independientes para cada empresa. Así podemos evolucionar el producto sin rehacerlo desde cero cada vez.</p><div class="flow"><div class="step"><div class="num">01</div><strong>Entra la llamada</strong></div><div class="step"><div class="num">02</div><strong>Nexo Voice escucha</strong></div><div class="step"><div class="num">03</div><strong>Clasifica y pregunta</strong></div><div class="step"><div class="num">04</div><strong>Resuelve o deriva</strong></div></div></div></section>
+  <section id="demo" class="section dark"><div class="shell"><div class="pilot"><div><div class="eyebrow">Primer perfil empresarial</div><h2>Hostelecan · piloto real</h2><p>Preparado para distinguir servicio técnico, administración, comercial y consultas generales sin inventar datos que todavía no estén configurados.</p></div><div class="actions"><a class="btn primary" href="/hostelecan.html">Probar Hostelecan</a></div></div></div></section>
+  <footer class="shell footer">Nexo Voice · Producto de Aurenexo</footer>
 </body>
 </html>
