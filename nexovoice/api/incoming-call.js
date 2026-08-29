@@ -10,23 +10,16 @@ REGLAS OBLIGATORIAS:
 - Habla siempre en español de España, salvo que el cliente pida expresamente otro idioma.
 - Nunca cambies al inglés por iniciativa propia.
 - Preséntate de forma breve como asistente virtual de la empresa.
-- Habla con una voz femenina natural, cálida, cercana y profesional.
-- Suena humana y conversacional, sin tono robótico ni de locución publicitaria.
-- Usa frases cortas y claras; estás atendiendo una llamada telefónica.
-- No hables demasiado rápido.
-- Deja pequeñas pausas naturales entre ideas.
-- Escucha al cliente, espera a que termine y responde a lo que realmente ha dicho.
-- Si el cliente te interrumpe, deja de hablar y atiende su nueva intervención.
-- Mantén una conversación normal durante toda la llamada, no te limites al saludo inicial.
-- Si el cliente guarda silencio, pregunta con naturalidad si sigue ahí o si puedes ayudarle en algo más.
+- Habla de forma natural, cálida, clara y profesional.
+- Usa frases cortas; estás atendiendo una llamada telefónica.
 - No inventes horarios, precios, servicios, citas ni datos de clientes.
 - Si todavía no tienes un dato empresarial necesario, dilo con naturalidad y ofrece tomar nota.
 - Si no entiendes un nombre, teléfono, fecha u hora, pide confirmación.
 - Antes de confirmar una reserva, modificación o cancelación, repite los datos esenciales.
 - Si el usuario pregunta si eres una persona, indica claramente que eres un asistente virtual con inteligencia artificial.
 
-OBJETIVO DE ESTA VERSIÓN:
-Mantener una conversación telefónica fluida, natural y completamente en español de España. Tras el saludo, escucha al cliente y responde de forma breve y útil en cada turno.
+OBJETIVO DE ESTA PRIMERA VERSIÓN:
+Mantener una conversación telefónica fluida completamente en español de España y entender correctamente la intención del cliente.
 `;
 
 function getCallId(event) {
@@ -60,9 +53,7 @@ async function sendInitialGreeting(callId) {
         const timeout = setTimeout(() => {
           try { ws.close(); } catch {}
           reject(new Error("sideband_timeout"));
-        }, 7000);
-
-        let greetingDone = false;
+        }, 5000);
 
         ws.on("open", () => {
           ws.send(JSON.stringify({
@@ -70,28 +61,15 @@ async function sendInitialGreeting(callId) {
             response: {
               output_modalities: ["audio"],
               instructions:
-                "Saluda ahora de forma natural, cálida y profesional, sin sonar como una grabación. Di: 'Hola, soy Nexo Voice, el asistente virtual de la empresa. Estoy aquí para ayudarte. ¿Qué necesitas?'. Después deja de hablar y escucha la respuesta del cliente.",
+                "Saluda ahora mismo, sin esperar a que el cliente hable. Di exactamente: 'Hola, soy Nexo Voice, el asistente virtual. ¿En qué puedo ayudarte?'. Habla en español de España y con tono natural.",
             },
           }));
-        });
 
-        ws.on("message", (data) => {
-          try {
-            const event = JSON.parse(data.toString());
-            if (event?.type === "error") {
-              clearTimeout(timeout);
-              reject(new Error(event?.error?.message || "realtime_sideband_error"));
-              return;
-            }
-            if (event?.type === "response.done" && !greetingDone) {
-              greetingDone = true;
-              clearTimeout(timeout);
-              setTimeout(() => {
-                try { ws.close(); } catch {}
-                resolve();
-              }, 250);
-            }
-          } catch {}
+          setTimeout(() => {
+            clearTimeout(timeout);
+            try { ws.close(); } catch {}
+            resolve();
+          }, 900);
         });
 
         ws.on("error", (error) => {
@@ -100,7 +78,7 @@ async function sendInitialGreeting(callId) {
         });
       });
 
-      console.log("Nexo Voice: initial greeting completed", { callId, attempt });
+      console.log("Nexo Voice: initial greeting triggered", { callId, attempt });
       return true;
     } catch (error) {
       console.warn("Nexo Voice: sideband greeting attempt failed", {
@@ -147,27 +125,9 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           type: "realtime",
-          model: process.env.NEXO_VOICE_MODEL || "gpt-realtime-2.1",
+          model: process.env.NEXO_VOICE_MODEL || "gpt-realtime-2",
           output_modalities: ["audio"],
-          audio: {
-            input: {
-              noise_reduction: { type: "near_field" },
-              turn_detection: {
-                type: "server_vad",
-                threshold: 0.5,
-                prefix_padding_ms: 300,
-                silence_duration_ms: 550,
-                create_response: true,
-                interrupt_response: true,
-                idle_timeout_ms: 12000
-              }
-            },
-            output: {
-              voice: "marin",
-              speed: 0.96
-            }
-          },
-          max_output_tokens: 900,
+          max_output_tokens: 700,
           instructions: INSTRUCTIONS,
           tracing: "auto"
         })
