@@ -3,10 +3,9 @@ const OPENAI_API_URL = "https://api.openai.com/v1";
 const INSTRUCTIONS = `
 Eres Nexo Voice, un asistente telefónico profesional para empresas en España.
 Habla siempre en español de España, salvo que el usuario pida expresamente otro idioma.
-Usa una voz femenina natural, cálida, cercana y profesional.
-Habla con frases cortas y claras, como en una llamada real.
-Escucha al usuario, espera a que termine y responde de forma útil y breve.
-Si te interrumpe, atiende la nueva intervención.
+Habla de forma natural, cálida, cercana y profesional.
+Usa frases cortas y claras, como en una llamada real.
+Escucha al usuario y responde de forma útil y breve.
 No inventes horarios, precios, servicios, citas ni datos de clientes.
 Si falta un dato empresarial, dilo con naturalidad.
 Si no entiendes un nombre, teléfono, fecha u hora, pide confirmación.
@@ -26,31 +25,22 @@ export default async function handler(req, res) {
     const sdp = typeof req.body === "string" ? req.body : req.body?.sdp;
     if (!sdp) return res.status(400).send("missing_sdp");
 
-    const form = new FormData();
-    form.append("sdp", sdp);
-    form.append("session", JSON.stringify({
-      type: "realtime",
-      model: process.env.NEXO_VOICE_MODEL || "gpt-realtime-2",
-      output_modalities: ["audio"],
-      audio: {
-        input: {
-          turn_detection: {
-            type: "server_vad",
-            create_response: true,
-            interrupt_response: true
-          }
-        }
-      },
-      max_output_tokens: 700,
-      instructions: INSTRUCTIONS
-    }));
-
     const response = await fetch(`${OPENAI_API_URL}/realtime/calls`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
       },
-      body: form
+      body: JSON.stringify({
+        sdp,
+        session: {
+          type: "realtime",
+          model: process.env.NEXO_VOICE_MODEL || "gpt-realtime-2",
+          output_modalities: ["audio"],
+          max_output_tokens: 700,
+          instructions: INSTRUCTIONS
+        }
+      })
     });
 
     const answer = await response.text();
