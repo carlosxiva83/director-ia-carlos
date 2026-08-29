@@ -60,7 +60,7 @@ startBtn.addEventListener('click',async()=>{
     dc=pc.createDataChannel('oai-events');
     dc.onopen=()=>{
       setStatus('Nexo Voice está escuchando',true);stopBtn.disabled=false;
-      dc.send(JSON.stringify({type:'response.create',response:{output_modalities:['audio'],instructions:"Saluda de forma breve y natural. Di: 'Hola, soy Nexo Voice, el asistente virtual de la empresa. ¿En qué puedo ayudarte?'. Después escucha y mantén una conversación normal en español de España."}}));
+      dc.send(JSON.stringify({type:'response.create',response:{output_modalities:['audio'],instructions:"Saluda de forma breve y natural. Di: 'Hola, soy Nexo Voice, el asistente personal de Aurenexo. ¿En qué puedo ayudarte?'. Después escucha y mantén una conversación normal en español de España."}}));
     };
     dc.onmessage=e=>{try{const ev=JSON.parse(e.data);if(ev.type==='error'){console.error(ev);setStatus('Error de OpenAI');showError(JSON.stringify(ev.error||ev))}}catch{}};
     pc.onconnectionstatechange=()=>{if(['failed','disconnected','closed'].includes(pc.connectionState)){cleanup();}}
