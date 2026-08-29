@@ -1,11 +1,19 @@
 {
-  "name": "Nexo Voice · Pruebas",
+  "name": "Nexo Voice",
   "short_name": "Nexo Voice",
-  "description": "Prueba Nexo Voice desde el móvil u ordenador sin llamadas internacionales.",
-  "start_url": "/test.html",
+  "description": "Asistente de voz inteligente para empresas.",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#0f172a",
-  "orientation": "portrait-primary"
+  "background_color": "#020814",
+  "theme_color": "#07111f",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
