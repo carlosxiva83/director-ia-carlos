@@ -1,0 +1,11 @@
+{
+  "name": "Nexo Voice · Pruebas",
+  "short_name": "Nexo Voice",
+  "description": "Prueba Nexo Voice desde el móvil u ordenador sin llamadas internacionales.",
+  "start_url": "/test.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary"
+}
