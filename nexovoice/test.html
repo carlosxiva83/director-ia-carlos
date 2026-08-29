@@ -22,6 +22,7 @@
     button{width:100%;border:0;border-radius:18px;padding:17px 18px;font-size:17px;font-weight:700;cursor:pointer}
     #start{background:#fff;color:#0f172a}#stop{margin-top:10px;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12)}
     button:disabled{opacity:.45;cursor:not-allowed}.hint{font-size:13px;opacity:.55;text-align:center;margin:17px 0 0}
+    #error{display:none;margin-top:14px;padding:12px 14px;border-radius:14px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);font-size:13px;line-height:1.4;word-break:break-word}
     audio{width:100%;margin-top:14px;display:none}
   </style>
 </head>
@@ -33,6 +34,7 @@
     <div class="status"><span id="dot" class="dot"></span><span id="status">Listo para probar</span></div>
     <button id="start">🎙️ Empezar conversación</button>
     <button id="stop" disabled>Finalizar prueba</button>
+    <div id="error"></div>
     <audio id="remote" autoplay></audio>
     <p class="hint">La primera vez, permite el acceso al micrófono. Esta pantalla se actualizará automáticamente con las nuevas versiones.</p>
   </main>
@@ -43,30 +45,31 @@ const stopBtn=document.getElementById('stop');
 const statusEl=document.getElementById('status');
 const dot=document.getElementById('dot');
 const remote=document.getElementById('remote');
-
+const errorEl=document.getElementById('error');
 function setStatus(text,live=false){statusEl.textContent=text;dot.classList.toggle('live',live)}
+function showError(text){errorEl.style.display='block';errorEl.textContent=text}
+function clearError(){errorEl.style.display='none';errorEl.textContent=''}
 function cleanup(){try{dc?.close()}catch{};try{pc?.close()}catch{};localStream?.getTracks().forEach(t=>t.stop());pc=null;dc=null;localStream=null;startBtn.disabled=false;stopBtn.disabled=true;setStatus('Listo para probar')}
-
 startBtn.addEventListener('click',async()=>{
-  startBtn.disabled=true;setStatus('Conectando…');
+  startBtn.disabled=true;clearError();setStatus('Conectando…');
   try{
     localStream=await navigator.mediaDevices.getUserMedia({audio:true});
     pc=new RTCPeerConnection();
-    pc.ontrack=e=>{remote.srcObject=e.streams[0]};
+    pc.ontrack=e=>{remote.srcObject=e.streams[0];remote.play().catch(()=>{})};
     localStream.getTracks().forEach(track=>pc.addTrack(track,localStream));
     dc=pc.createDataChannel('oai-events');
     dc.onopen=()=>{
       setStatus('Nexo Voice está escuchando',true);stopBtn.disabled=false;
       dc.send(JSON.stringify({type:'response.create',response:{output_modalities:['audio'],instructions:"Saluda de forma breve y natural. Di: 'Hola, soy Nexo Voice, el asistente virtual de la empresa. ¿En qué puedo ayudarte?'. Después escucha y mantén una conversación normal en español de España."}}));
     };
-    dc.onmessage=e=>{try{const ev=JSON.parse(e.data);if(ev.type==='error'){console.error(ev);setStatus('Ha ocurrido un error')}}catch{}};
-    pc.onconnectionstatechange=()=>{if(['failed','disconnected','closed'].includes(pc.connectionState)) cleanup()};
+    dc.onmessage=e=>{try{const ev=JSON.parse(e.data);if(ev.type==='error'){console.error(ev);setStatus('Error de OpenAI');showError(JSON.stringify(ev.error||ev))}}catch{}};
+    pc.onconnectionstatechange=()=>{if(['failed','disconnected','closed'].includes(pc.connectionState)){setStatus('Conexión cerrada');}}
     const offer=await pc.createOffer();await pc.setLocalDescription(offer);
     const r=await fetch('/api/test-call',{method:'POST',headers:{'Content-Type':'application/sdp'},body:offer.sdp});
-    if(!r.ok) throw new Error(await r.text());
-    const answer={type:'answer',sdp:await r.text()};
-    await pc.setRemoteDescription(answer);
-  }catch(err){console.error(err);setStatus('No se pudo conectar');startBtn.disabled=false;alert('No se pudo iniciar la prueba. Revisa el permiso del micrófono y vuelve a intentarlo.');}
+    const body=await r.text();
+    if(!r.ok) throw new Error('Servidor '+r.status+': '+body);
+    await pc.setRemoteDescription({type:'answer',sdp:body});
+  }catch(err){console.error(err);setStatus('No se pudo conectar');startBtn.disabled=false;showError(err?.message||String(err));alert('La prueba no ha conectado. Ahora verás debajo el error real para poder corregirlo.');}
 });
 stopBtn.addEventListener('click',cleanup);
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}
