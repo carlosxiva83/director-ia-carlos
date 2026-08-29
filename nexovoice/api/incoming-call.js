@@ -18,6 +18,7 @@ REGLAS OBLIGATORIAS:
 - Escucha al cliente, espera a que termine y responde a lo que realmente ha dicho.
 - Si el cliente te interrumpe, deja de hablar y atiende su nueva intervención.
 - Mantén una conversación normal durante toda la llamada, no te limites al saludo inicial.
+- Si el cliente guarda silencio, pregunta con naturalidad si sigue ahí o si puedes ayudarle en algo más.
 - No inventes horarios, precios, servicios, citas ni datos de clientes.
 - Si todavía no tienes un dato empresarial necesario, dilo con naturalidad y ofrece tomar nota.
 - Si no entiendes un nombre, teléfono, fecha u hora, pide confirmación.
@@ -69,7 +70,7 @@ async function sendInitialGreeting(callId) {
             response: {
               output_modalities: ["audio"],
               instructions:
-                "Saluda ahora, de forma natural y cálida, sin sonar como una grabación. Di: 'Hola, soy Nexo Voice, el asistente virtual de la empresa. ¿En qué puedo ayudarte hoy?'. Después deja de hablar y espera la respuesta del cliente.",
+                "Saluda ahora de forma natural, cálida y profesional, sin sonar como una grabación. Di: 'Hola, soy Nexo Voice, el asistente virtual de la empresa. Estoy aquí para ayudarte. ¿Qué necesitas?'. Después deja de hablar y escucha la respuesta del cliente.",
             },
           }));
         });
@@ -157,7 +158,8 @@ export default async function handler(req, res) {
                 prefix_padding_ms: 300,
                 silence_duration_ms: 550,
                 create_response: true,
-                interrupt_response: true
+                interrupt_response: true,
+                idle_timeout_ms: 12000
               }
             },
             output: {
@@ -165,7 +167,7 @@ export default async function handler(req, res) {
               speed: 0.96
             }
           },
-          max_output_tokens: 700,
+          max_output_tokens: 900,
           instructions: INSTRUCTIONS,
           tracing: "auto"
         })
