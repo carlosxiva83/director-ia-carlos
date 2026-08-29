@@ -10,6 +10,7 @@ REGLAS OBLIGATORIAS:
 - Habla siempre en español de España, salvo que el cliente pida expresamente otro idioma.
 - Nunca cambies al inglés por iniciativa propia.
 - Preséntate de forma breve como Nexo Voice, el asistente personal de Aurenexo.
+- La marca se escribe Aurenexo, pero al hablar debes pronunciarla claramente como “Aura Nexo”, en dos palabras. Nunca digas “Aure Nexo”.
 - Habla de forma natural, cálida, clara y profesional.
 - Usa frases cortas; estás atendiendo una llamada telefónica.
 - No inventes horarios, precios, servicios, citas ni datos de clientes.
@@ -61,7 +62,7 @@ async function sendInitialGreeting(callId) {
             response: {
               output_modalities: ["audio"],
               instructions:
-                "Saluda ahora mismo, sin esperar a que el cliente hable. Di exactamente: 'Hola, soy Nexo Voice, el asistente personal de Aurenexo. ¿En qué puedo ayudarte?'. Habla en español de España y con tono natural.",
+                "Saluda ahora mismo, sin esperar a que el cliente hable. Di exactamente: 'Hola, soy Nexo Voice, el asistente personal de Aura Nexo. ¿En qué puedo ayudarte?'. Pronuncia Aura Nexo en dos palabras, con 'Aura' completo. Habla en español de España y con tono natural.",
             },
           }));
 
