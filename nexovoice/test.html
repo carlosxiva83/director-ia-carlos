@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nexo Voice" />
+  <title>Nexo Voice · Pruebas</title>
+  <link rel="manifest" href="/manifest.json" />
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:dark}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#1e293b 0,#0f172a 45%,#020617 100%);color:#fff;display:grid;place-items:center;padding:22px}
+    .card{width:min(560px,100%);background:rgba(15,23,42,.82);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.12);border-radius:28px;padding:28px;box-shadow:0 28px 80px rgba(0,0,0,.35)}
+    .brand{font-size:14px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+    h1{font-size:34px;line-height:1.05;margin:10px 0 10px}.sub{opacity:.74;line-height:1.5;margin:0 0 24px}
+    .status{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.06);border-radius:16px;padding:14px 16px;margin-bottom:20px}
+    .dot{width:11px;height:11px;border-radius:999px;background:#64748b;box-shadow:0 0 0 6px rgba(100,116,139,.12)}
+    .dot.live{background:#22c55e;box-shadow:0 0 0 6px rgba(34,197,94,.14)}
+    button{width:100%;border:0;border-radius:18px;padding:17px 18px;font-size:17px;font-weight:700;cursor:pointer}
+    #start{background:#fff;color:#0f172a}#stop{margin-top:10px;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12)}
+    button:disabled{opacity:.45;cursor:not-allowed}.hint{font-size:13px;opacity:.55;text-align:center;margin:17px 0 0}
+    audio{width:100%;margin-top:14px;display:none}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand">Nexo Voice</div>
+    <h1>Prueba de voz</h1>
+    <p class="sub">Habla con Nexo Voice desde el móvil u ordenador sin hacer una llamada internacional.</p>
+    <div class="status"><span id="dot" class="dot"></span><span id="status">Listo para probar</span></div>
+    <button id="start">🎙️ Empezar conversación</button>
+    <button id="stop" disabled>Finalizar prueba</button>
+    <audio id="remote" autoplay></audio>
+    <p class="hint">La primera vez, permite el acceso al micrófono. Esta pantalla se actualizará automáticamente con las nuevas versiones.</p>
+  </main>
+<script>
+let pc, dc, localStream;
+const startBtn=document.getElementById('start');
+const stopBtn=document.getElementById('stop');
+const statusEl=document.getElementById('status');
+const dot=document.getElementById('dot');
+const remote=document.getElementById('remote');
+
+function setStatus(text,live=false){statusEl.textContent=text;dot.classList.toggle('live',live)}
+function cleanup(){try{dc?.close()}catch{};try{pc?.close()}catch{};localStream?.getTracks().forEach(t=>t.stop());pc=null;dc=null;localStream=null;startBtn.disabled=false;stopBtn.disabled=true;setStatus('Listo para probar')}
+
+startBtn.addEventListener('click',async()=>{
+  startBtn.disabled=true;setStatus('Conectando…');
+  try{
+    localStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    pc=new RTCPeerConnection();
+    pc.ontrack=e=>{remote.srcObject=e.streams[0]};
+    localStream.getTracks().forEach(track=>pc.addTrack(track,localStream));
+    dc=pc.createDataChannel('oai-events');
+    dc.onopen=()=>{
+      setStatus('Nexo Voice está escuchando',true);stopBtn.disabled=false;
+      dc.send(JSON.stringify({type:'response.create',response:{output_modalities:['audio'],instructions:"Saluda de forma breve y natural. Di: 'Hola, soy Nexo Voice, el asistente virtual de la empresa. ¿En qué puedo ayudarte?'. Después escucha y mantén una conversación normal en español de España."}}));
+    };
+    dc.onmessage=e=>{try{const ev=JSON.parse(e.data);if(ev.type==='error'){console.error(ev);setStatus('Ha ocurrido un error')}}catch{}};
+    pc.onconnectionstatechange=()=>{if(['failed','disconnected','closed'].includes(pc.connectionState)) cleanup()};
+    const offer=await pc.createOffer();await pc.setLocalDescription(offer);
+    const r=await fetch('/api/test-call',{method:'POST',headers:{'Content-Type':'application/sdp'},body:offer.sdp});
+    if(!r.ok) throw new Error(await r.text());
+    const answer={type:'answer',sdp:await r.text()};
+    await pc.setRemoteDescription(answer);
+  }catch(err){console.error(err);setStatus('No se pudo conectar');startBtn.disabled=false;alert('No se pudo iniciar la prueba. Revisa el permiso del micrófono y vuelve a intentarlo.');}
+});
+stopBtn.addEventListener('click',cleanup);
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
