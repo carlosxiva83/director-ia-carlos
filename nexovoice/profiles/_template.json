@@ -3,11 +3,27 @@
   "company_name": "Nombre del negocio",
   "assistant_name": "Nexo Voice",
   "language": "es-ES",
+  "timezone": "Europe/Madrid",
   "greeting": "Hola, soy Nexo Voice, el asistente virtual de Nombre del negocio. ¿En qué puedo ayudarte?",
   "business_context": "Descripción breve y verificada de la empresa y de cómo debe atender Nexo Voice.",
+  "commercial": {
+    "plan_code": "inicio",
+    "included_minutes": null,
+    "overage_eur_per_minute": null,
+    "setup_fee_eur": null
+  },
+  "telephony": {
+    "provider": "twilio",
+    "phone_number": "",
+    "trunk_sid": "",
+    "forwarding_mode": "",
+    "rule": "No activar producción hasta probar una llamada entrante y una finalización completa."
+  },
   "public_contact": {
     "phone": "",
-    "rule": "No inventar teléfonos ni datos de contacto. Usar solo datos públicos autorizados."
+    "email": "",
+    "website": "",
+    "rule": "No inventar teléfonos, correos, webs ni datos de contacto. Usar solo datos autorizados."
   },
   "hours": {
     "store": "",
@@ -24,6 +40,11 @@
       "Consultar la fuente conectada cuando la información deba ser actual."
     ]
   },
+  "panel": {
+    "enabled": true,
+    "users": [],
+    "rule": "Cada usuario debe quedar vinculado al business_id correcto."
+  },
   "internal_messages": {
     "status": "configurable",
     "collect": ["nombre", "teléfono", "empresa si aplica", "motivo", "destinatario si aplica", "urgencia si la expresa"],
@@ -34,6 +55,15 @@
     "store_summary": true,
     "store_operational_metadata": true,
     "retention_days": null
+  },
+  "onboarding": {
+    "profile_ready": false,
+    "phone_ready": false,
+    "instructions_ready": false,
+    "panel_users_ready": false,
+    "billing_ready": false,
+    "test_call_ready": false,
+    "go_live_ready": false
   },
   "rules": [
     "Habla siempre en español de España salvo petición expresa del cliente.",
