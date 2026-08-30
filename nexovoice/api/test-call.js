@@ -15,21 +15,19 @@ async function readRawBody(req) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).send("method_not_allowed");
-  }
-
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).send("missing_openai_api_key");
-  }
+  if (req.method !== "POST") return res.status(405).send("method_not_allowed");
+  if (!process.env.OPENAI_API_KEY) return res.status(500).send("missing_openai_api_key");
 
   try {
     const sdp = await readRawBody(req);
-    if (!sdp || !sdp.includes("v=0")) {
-      return res.status(400).send("missing_sdp");
-    }
+    if (!sdp || !sdp.includes("v=0")) return res.status(400).send("missing_sdp");
 
-    const model = process.env.NEXO_VOICE_MODEL || "gpt-realtime-2";
+    // Voice Lab can explicitly request the current premium model. The normal
+    // production path keeps the environment/default model untouched.
+    const requested = String(req.query?.model || "");
+    const allowed = new Set(["gpt-realtime-2", "gpt-realtime-2.1"]);
+    const model = allowed.has(requested) ? requested : (process.env.NEXO_VOICE_MODEL || "gpt-realtime-2");
+
     const response = await fetch(`${OPENAI_API_URL}/realtime/calls?model=${encodeURIComponent(model)}`, {
       method: "POST",
       headers: {
