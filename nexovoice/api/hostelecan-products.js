@@ -10,10 +10,11 @@ function normalize(value=''){
 }
 
 const STOP=new Set(['de','del','la','las','el','los','un','una','unos','unas','para','por','con','que','hay','tenéis','teneis','tiene','quiero','busco','necesito','linea','línea']);
+const CHEAP_WORDS=new Set(['barato','barata','baratos','baratas','economico','economica','economicos','economicas','precio','precios']);
 const DEFAULT_DELIVERY='24-72 horas';
 
 function usefulTokens(q){
-  return normalize(q).split(' ').filter(t=>t.length>1&&!STOP.has(t));
+  return normalize(q).split(' ').filter(t=>t.length>1&&!STOP.has(t)&&!CHEAP_WORDS.has(t));
 }
 
 function productPrice(p){
@@ -50,6 +51,11 @@ function scoreProduct(p,tokens,approx){
   return score;
 }
 
+function isCheapIntent(q){
+  const n=normalize(q);
+  return /\b(mas barato|más barato|mas economico|más económico|economico|barato|menor precio|precio mas bajo|precio más bajo)\b/.test(n);
+}
+
 async function searchStore(term){
   const url='https://hostelecan.com/wp-json/wc/store/v1/products?search='+encodeURIComponent(term)+'&per_page=100';
   const r=await fetch(url,{headers:{'Accept':'application/json'}});
@@ -62,6 +68,8 @@ export default async function handler(req,res){
   if(req.method!=='GET') return res.status(405).json({error:'Method not allowed'});
   const q=String(req.query.q||'').trim();
   const approx=Number(req.query.price||0)||null;
+  const cheaperThan=Number(req.query.cheaper_than||0)||null;
+  const cheapest=String(req.query.cheapest||'').toLowerCase()==='true'||isCheapIntent(q);
   if(!q) return res.status(400).json({error:'Falta q'});
 
   try{
@@ -81,28 +89,47 @@ export default async function handler(req,res){
     }
 
     const found=new Map();
-    for(const term of attempts.slice(0,8)){
+    for(const term of attempts.slice(0,10)){
       let rows=[];
       try{rows=await searchStore(term)}catch(e){if(!found.size) throw e;}
       for(const row of rows) found.set(row.id,row);
-      if(found.size>=40) break;
+      if(found.size>=80) break;
     }
 
-    let products=[...found.values()].map(mapProduct);
-    products=products
+    const scored=[...found.values()]
+      .map(mapProduct)
       .map(p=>({...p,_score:scoreProduct(p,tokens,approx)}))
-      .sort((a,b)=>b._score-a._score || (approx?Math.abs((a.price??1e9)-approx)-Math.abs((b.price??1e9)-approx):0))
-      .filter((p,i)=>p._score>0 || i<3)
+      .filter((p,i)=>p._score>0 || i<5);
+
+    const relevant=scored.filter(p=>p._score>0);
+    const pricedRelevant=relevant.filter(p=>Number.isFinite(p.price));
+    const cheaperCandidates=(cheaperThan?pricedRelevant.filter(p=>p.price<cheaperThan):pricedRelevant)
+      .sort((a,b)=>(a.price??1e9)-(b.price??1e9) || b._score-a._score)
       .slice(0,8)
       .map(({_score,...p})=>p);
+
+    let products=[...scored];
+    if(cheapest){
+      products.sort((a,b)=>{
+        const aRelevant=a._score>0?0:1,bRelevant=b._score>0?0:1;
+        return aRelevant-bRelevant || (a.price??1e9)-(b.price??1e9) || b._score-a._score;
+      });
+    }else{
+      products.sort((a,b)=>b._score-a._score || (approx?Math.abs((a.price??1e9)-approx)-Math.abs((b.price??1e9)-approx):0));
+    }
+    products=products.slice(0,8).map(({_score,...p})=>p);
 
     return res.status(200).json({
       query:q,
       approx_price:approx,
+      cheapest_requested:cheapest,
+      cheaper_than:cheaperThan,
       default_delivery_window:DEFAULT_DELIVERY,
       products,
-      searched_terms:attempts.slice(0,8),
-      note:'El plazo habitual de Hostelecan es 24-72 horas cuando no haya un plazo específico distinto para el producto. in_stock es el estado público de la tienda online.'
+      cheaper_candidates:cheaperCandidates,
+      cheapest_candidate:cheaperCandidates[0]||null,
+      searched_terms:attempts.slice(0,10),
+      note:'Si el cliente pide algo más barato, usa cheaper_candidates/cheapest_candidate antes de afirmar que no existe una opción inferior. Solo di que no hay algo más barato si no aparece ningún candidato compatible tras esta búsqueda ampliada. El plazo habitual de Hostelecan es 24-72 horas cuando no haya un plazo específico distinto para el producto. in_stock es el estado público de la tienda online.'
     });
   }catch(e){
     return res.status(502).json({error:'No se pudo consultar el catálogo público de Hostelecan.'});
