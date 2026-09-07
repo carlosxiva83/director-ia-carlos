@@ -10,26 +10,40 @@ export default async function handler(req,res){
   if(!key) return res.status(503).json({error:'elevenlabs_not_configured'});
 
   const src=req.method==='GET'?(req.query||{}):(req.body||{});
-  const {voice_id,text,speed,stability,style,model_id,stable}=src;
+  const {voice_id,text,speed,stability,style,similarity_boost,model_id,stable,profile,seed}=src;
   if(!voice_id||typeof voice_id!=='string') return res.status(400).json({error:'missing_voice_id'});
   const safeText=String(text||'').trim().slice(0,700);
   if(!safeText) return res.status(400).json({error:'missing_text'});
 
-  const voiceSettings={
-    stability:clamp(stability,.2,.85,.5),
-    similarity_boost:.84,
+  const isCarla=String(profile||'').toLowerCase()==='carla';
+  const voiceSettings=isCarla?{
+    stability:.9,
+    similarity_boost:.96,
+    style:0,
+    use_speaker_boost:true,
+    speed:.95
+  }:{
+    stability:clamp(stability,.2,1,.5),
+    similarity_boost:clamp(similarity_boost,.2,1,.84),
     style:clamp(style,0,.6,.34),
     use_speaker_boost:true,
-    speed:clamp(speed,.8,1.15,.96)
+    speed:clamp(speed,.7,1.2,.96)
   };
   const allowedModels=new Set(['eleven_multilingual_v2','eleven_flash_v2_5']);
   const model=allowedModels.has(model_id)?model_id:'eleven_multilingual_v2';
+  const parsedSeed=Number.isInteger(Number(seed))?Math.min(4294967295,Math.max(0,Number(seed))):null;
+  const finalSeed=isCarla?2609081983:parsedSeed;
 
   try{
     const r=await fetch(`${BASE}/${encodeURIComponent(voice_id)}/stream?output_format=mp3_44100_128`,{
       method:'POST',
       headers:{'xi-api-key':key,'Content-Type':'application/json'},
-      body:JSON.stringify({text:safeText,model_id:model,voice_settings:voiceSettings})
+      body:JSON.stringify({
+        text:safeText,
+        model_id:model,
+        voice_settings:voiceSettings,
+        ...(finalSeed!==null?{seed:finalSeed}:{})
+      })
     });
     if(!r.ok){const t=await r.text();return res.status(502).json({error:'elevenlabs_failed',detail:t.slice(0,500)});}
 
@@ -39,9 +53,7 @@ export default async function handler(req,res){
     res.setHeader('X-Accel-Buffering','no');
     if(!r.body) return res.status(502).json({error:'empty_audio_stream'});
 
-    // Stable mode buffers the whole MP3 before playback. It is a little slower to start,
-    // but avoids chunk/rebuffer artifacts during demo recordings.
-    if(String(stable)==='1' || String(stable).toLowerCase()==='true'){
+    if(String(stable)==='1' || String(stable).toLowerCase()==='true' || isCarla){
       const bytes=Buffer.from(await r.arrayBuffer());
       res.setHeader('Content-Length',String(bytes.length));
       return res.end(bytes);
