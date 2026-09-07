@@ -1,9 +1,32 @@
 const OPENAI='https://api.openai.com/v1/chat/completions';
+const SHIPMENTS=['581742','936105','274869'];
+function fold(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+function canonicalShipment(text){
+  const raw=String(text||'');
+  const digits=raw.replace(/\D/g,'');
+  for(const id of SHIPMENTS){if(digits.includes(id))return id}
+  const t=fold(raw);
+  const aliases={
+    '581742':['cinco ocho uno siete cuatro dos','quinientos ochenta y un mil setecientos cuarenta y dos','quinientos ochenta y uno setecientos cuarenta y dos','cincuenta y ocho diecisiete cuarenta y dos','cinco ochenta y uno siete cuarenta y dos'],
+    '936105':['nueve tres seis uno cero cinco','novecientos treinta y seis mil ciento cinco','novecientos treinta y seis ciento cinco','noventa y tres sesenta y uno cero cinco','nueve treinta y seis uno cero cinco'],
+    '274869':['dos siete cuatro ocho seis nueve','doscientos setenta y cuatro mil ochocientos sesenta y nueve','doscientos setenta y cuatro ochocientos sesenta y nueve','veintisiete cuarenta y ocho sesenta y nueve','dos setenta y cuatro ocho sesenta y nueve']
+  };
+  for(const [id,list] of Object.entries(aliases))if(list.some(a=>t.includes(a)))return id;
+  return null;
+}
 export default async function handler(req,res){
   if(req.method!=='POST') return res.status(405).json({error:'method_not_allowed'});
   if(!process.env.OPENAI_API_KEY) return res.status(503).json({error:'openai_not_configured'});
   const {messages=[]}=req.body||{};
-  const clean=Array.isArray(messages)?messages.slice(-12).map(m=>({role:m.role==='assistant'?'assistant':'user',content:String(m.text||m.content||'').slice(0,500)})):[];
+  const clean=Array.isArray(messages)?messages.slice(-12).map(m=>{
+    const role=m.role==='assistant'?'assistant':'user';
+    let content=String(m.text||m.content||'').slice(0,500);
+    if(role==='user'){
+      const id=canonicalShipment(content);
+      if(id) content += `\n[EXPEDICIÓN RECONOCIDA: ${id}]`;
+    }
+    return {role,content};
+  }):[];
   const system=`Habla siempre en español de España. Te llamas Alejandra y eres la asistente telefónica virtual de Transportes Nexo, empresa ficticia de una demo de Nexo Voice. Ya te has presentado al inicio: no vuelvas a presentarte salvo que te lo pregunten.
 
 Habla natural, cercana, profesional y muy breve, como una empleada real. Entiende intención y contexto aunque el usuario no siga el guion literalmente. Responde en una sola frase siempre que sea posible y evita introducciones innecesarias.
@@ -14,8 +37,9 @@ EXPEDICIONES:
 274869: Laura Sánchez, Sevilla, EN DELEGACIÓN DE DESTINO, mañana 09:00–14:00, 3 bultos, llegada Sevilla 21:20, sin incidencia.
 
 REGLAS:
+- Si aparece [EXPEDICIÓN RECONOCIDA: X], usa X como número correcto aunque la transcripción anterior sea rara.
 - Si espera un envío, pide número si falta.
-- Entiende los números aunque se digan separados o agrupados.
+- Entiende los números aunque se digan cifra a cifra, separados o agrupados.
 - Da solo el dato necesario, no toda la ficha.
 - Para 936105, si pregunta por retraso: sigue en tránsito, último movimiento Córdoba 18:10, sin incidencia registrada. No inventes causas.
 - Si pide correo, pide email si falta; al recibirlo di que dejas preparada/solicitada la información, no que ya se envió.
