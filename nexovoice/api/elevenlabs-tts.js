@@ -10,7 +10,7 @@ export default async function handler(req,res){
   if(!key) return res.status(503).json({error:'elevenlabs_not_configured'});
 
   const src=req.method==='GET'?(req.query||{}):(req.body||{});
-  const {voice_id,text,speed,stability,style,model_id}=src;
+  const {voice_id,text,speed,stability,style,model_id,stable}=src;
   if(!voice_id||typeof voice_id!=='string') return res.status(400).json({error:'missing_voice_id'});
   const safeText=String(text||'').trim().slice(0,700);
   if(!safeText) return res.status(400).json({error:'missing_text'});
@@ -39,7 +39,14 @@ export default async function handler(req,res){
     res.setHeader('X-Accel-Buffering','no');
     if(!r.body) return res.status(502).json({error:'empty_audio_stream'});
 
-    // Pipe ElevenLabs chunks straight to the browser instead of buffering the full MP3.
+    // Stable mode buffers the whole MP3 before playback. It is a little slower to start,
+    // but avoids chunk/rebuffer artifacts during demo recordings.
+    if(String(stable)==='1' || String(stable).toLowerCase()==='true'){
+      const bytes=Buffer.from(await r.arrayBuffer());
+      res.setHeader('Content-Length',String(bytes.length));
+      return res.end(bytes);
+    }
+
     Readable.fromWeb(r.body).on('error',e=>{console.error('ElevenLabs stream error',e);try{res.end()}catch(_){}}).pipe(res);
   }catch(e){console.error('ElevenLabs TTS error',e);if(!res.headersSent)return res.status(500).json({error:'internal_error'});try{res.end()}catch(_){}}
 }
