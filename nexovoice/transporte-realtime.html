@@ -1,0 +1,34 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nexo Voice · Transportes Nexo Realtime</title><style>body{font-family:Inter,system-ui,sans-serif;background:#050505;color:#fff;margin:0;padding:18px}.wrap{max-width:820px;margin:auto}.card{background:#0d0d0d;border:1px solid #d6ab5c55;border-radius:24px;padding:22px}.gold{color:#e7c980}.status,.msg{padding:12px;border-radius:12px;margin-top:10px;background:#ffffff0b}.ai{border:1px solid #d6ab5c33;background:#d6ab5c13}.user{background:#ffffff08}button{width:100%;padding:16px;border:0;border-radius:14px;font-weight:900;font-size:17px;background:#e7c980;color:#111;margin-top:12px}.secondary{background:#ffffff12;color:#fff}.tiny{font-size:12px;color:#999;line-height:1.45}.live{display:inline-block;width:9px;height:9px;border-radius:50%;background:#30d158;margin-right:7px}.off{background:#777}audio{display:none}@media(max-width:600px){body{padding:10px}.card{padding:16px}}</style></head><body><div class="wrap"><div class="card"><div class="gold">NEXO VOICE · REALTIME</div><h1>Transportes Nexo · Carla</h1><p>Conversación de voz a voz en tiempo real. Carla mantiene el contexto y puede consultar expediciones o registrar avisos durante la llamada.</p><div id="status" class="status"><span id="dot" class="live off"></span><span id="statusText">Preparada para iniciar.</span></div><button id="start">📞 Iniciar llamada Realtime</button><button id="stop" class="secondary" disabled>Finalizar llamada</button><div id="chat"></div><p class="tiny">Demo comercial con datos ficticios. Esta versión no usa SpeechRecognition del navegador ni ElevenLabs para cada respuesta: el audio entra y sale por una conexión WebRTC Realtime.</p><audio id="remote" autoplay></audio></div></div><script>
+let pc=null,dc=null,stream=null,active=false;const start=document.getElementById('start'),stop=document.getElementById('stop'),statusText=document.getElementById('statusText'),dot=document.getElementById('dot'),chat=document.getElementById('chat'),remote=document.getElementById('remote');
+function esc(x){return String(x||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function add(role,text){if(!text)return;const d=document.createElement('div');d.className='msg '+(role==='assistant'?'ai':'user');d.innerHTML='<b>'+(role==='assistant'?'Carla':'Tú')+':</b> '+esc(text);chat.prepend(d)}
+function setStatus(t,on=true){statusText.textContent=t;dot.classList.toggle('off',!on)}
+function send(obj){if(dc&&dc.readyState==='open')dc.send(JSON.stringify(obj))}
+async function runTool(evt){let args={};try{args=JSON.parse(evt.arguments||'{}')}catch(e){};const r=await fetch('/api/transport-realtime-tools',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:evt.name,arguments:args})});const result=await r.json();send({type:'conversation.item.create',item:{type:'function_call_output',call_id:evt.call_id,output:JSON.stringify(result)}});send({type:'response.create'});}
+function onEvent(e){let evt;try{evt=JSON.parse(e.data)}catch(_){return}
+  if(evt.type==='session.created'||evt.type==='session.updated')setStatus('Carla conectada. Puedes hablar.',true);
+  if(evt.type==='input_audio_buffer.speech_started')setStatus('Te escucho…',true);
+  if(evt.type==='input_audio_buffer.speech_stopped')setStatus('Carla está pensando…',true);
+  if(evt.type==='response.audio_transcript.done')add('assistant',evt.transcript);
+  if(evt.type==='conversation.item.input_audio_transcription.completed')add('user',evt.transcript);
+  if(evt.type==='response.function_call_arguments.done')runTool(evt).catch(()=>{});
+  if(evt.type==='response.done')setStatus('Tu turno…',true);
+  if(evt.type==='error'){console.error(evt);setStatus('Ha ocurrido un error en la llamada.',false)}
+}
+async function begin(){start.disabled=true;chat.innerHTML='';setStatus('Conectando Realtime…',true);try{
+  stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  pc=new RTCPeerConnection();
+  remote.srcObject=new MediaStream();
+  pc.ontrack=e=>remote.srcObject.addTrack(e.track);
+  stream.getTracks().forEach(t=>pc.addTrack(t,stream));
+  dc=pc.createDataChannel('oai-events');dc.onmessage=onEvent;dc.onopen=()=>{active=true;stop.disabled=false;setStatus('Carla conectada. Iniciando conversación…',true);send({type:'response.create',response:{instructions:'Saluda ahora exactamente como se indica en tus instrucciones y espera la respuesta del usuario.'}})};
+  dc.onclose=()=>{if(active)finish()};
+  const offer=await pc.createOffer();await pc.setLocalDescription(offer);
+  const r=await fetch('/api/realtime-call',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sdp:offer.sdp})});
+  if(!r.ok){let detail='';try{detail=JSON.stringify(await r.json())}catch(_){detail=await r.text()}throw new Error(detail||'No se pudo crear la llamada Realtime')}
+  const answer={type:'answer',sdp:await r.text()};await pc.setRemoteDescription(answer);
+ }catch(e){console.error(e);setStatus('No se pudo iniciar la llamada Realtime.',false);start.disabled=false;try{stream?.getTracks().forEach(t=>t.stop())}catch(_){}}
+}
+function finish(){active=false;try{dc?.close()}catch(_){}try{pc?.close()}catch(_){}try{stream?.getTracks().forEach(t=>t.stop())}catch(_){}dc=null;pc=null;stream=null;stop.disabled=true;start.disabled=false;setStatus('Llamada finalizada.',false)}
+start.onclick=begin;stop.onclick=finish;
+</script></body></html>
