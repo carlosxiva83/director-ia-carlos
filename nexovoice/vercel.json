@@ -1,6 +1,30 @@
 {
   "headers": [
     {
+      "source": "/(index.html)?",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }
+      ]
+    },
+    {
+      "source": "/test.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }
+      ]
+    },
+    {
+      "source": "/hostelecan-alejandra.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }
+      ]
+    },
+    {
+      "source": "/transporte-realtime.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }
+      ]
+    },
+    {
       "source": "/panel.html",
       "headers": [
         { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" },
@@ -16,6 +40,7 @@
     }
   ],
   "redirects": [
-    { "source": "/panel", "destination": "/panel.html", "permanent": false }
+    { "source": "/panel", "destination": "/panel.html", "permanent": false },
+    { "source": "/hostelecan.html", "destination": "/hostelecan-alejandra.html", "permanent": false }
   ]
 }
