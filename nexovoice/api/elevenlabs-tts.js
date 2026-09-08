@@ -21,7 +21,7 @@ export default async function handler(req,res){
     similarity_boost:.96,
     style:0,
     use_speaker_boost:true,
-    speed:.95
+    speed:1.02
   }:{
     stability:clamp(stability,.2,1,.5),
     similarity_boost:clamp(similarity_boost,.2,1,.84),
