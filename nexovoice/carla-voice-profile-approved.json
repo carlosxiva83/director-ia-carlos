@@ -1,0 +1,17 @@
+{
+  "profile": "carla-approved-reference",
+  "status": "approved-by-user",
+  "provider": "ElevenLabs",
+  "base_voice_lookup": "voice name starts with Alejandra",
+  "model_id": "eleven_multilingual_v2",
+  "voice_settings": {
+    "stability": 0.9,
+    "similarity_boost": 0.96,
+    "style": 0,
+    "use_speaker_boost": true,
+    "speed": 0.95
+  },
+  "seed": 2609081983,
+  "stable_mode": true,
+  "notes": "This is the exact approved Carla configuration before any speed tuning. Do not overwrite. Use this file to restore the approved reference if a later change sounds worse."
+}
