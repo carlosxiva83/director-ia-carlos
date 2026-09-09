@@ -19,7 +19,7 @@ function send(obj){if(dc&&dc.readyState==='open')dc.send(JSON.stringify(obj))}
 function cleanup(message='Conversación finalizada.'){active=false;clearTimeout(connectTimer);try{dc?.close()}catch{}try{pc?.close()}catch{}try{stream?.getTracks().forEach(t=>t.stop())}catch{}dc=null;pc=null;stream=null;remote.srcObject=null;start.disabled=false;stop.disabled=true;setStatus(message,false)}
 function onEvent(e){let evt;try{evt=JSON.parse(e.data)}catch{return}
  if(evt.type==='session.created'){
-   send({type:'session.update',session:{type:'realtime',instructions:INSTRUCTIONS,output_modalities:['audio'],audio:{input:{turn_detection:{type:'server_vad',threshold:0.5,prefix_padding_ms:300,silence_duration_ms:700,create_response:true,interrupt_response:true}},output:{voice:'marin'}}}});
+   send({type:'session.update',session:{type:'realtime',instructions:INSTRUCTIONS,output_modalities:['audio'],audio:{input:{noise_reduction:{type:'near_field'},turn_detection:{type:'server_vad',threshold:0.78,prefix_padding_ms:300,silence_duration_ms:900,create_response:true,interrupt_response:false}},output:{voice:'marin'}}}});
  }
  if(evt.type==='session.updated'){
    setStatus('Carla está conectada. Puedes hablar.',true);
@@ -34,7 +34,7 @@ function onEvent(e){let evt;try{evt=JSON.parse(e.data)}catch{return}
 async function begin(){if(active)return;clearError();start.disabled=true;stop.disabled=true;setStatus('Pidiendo acceso al micrófono…',true);
  try{
    if(!navigator.mediaDevices?.getUserMedia)throw new Error('mic_not_supported');
-   stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+   stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:false,channelCount:1}});
    pc=new RTCPeerConnection();remote.srcObject=new MediaStream();pc.ontrack=e=>{for(const t of e.streams?.[0]?.getTracks?.()||[e.track]){try{remote.srcObject.addTrack(t)}catch{}};remote.play().catch(()=>{})};
    pc.onconnectionstatechange=()=>{if(!pc)return;const st=pc.connectionState;if(st==='connected'){clearTimeout(connectTimer);active=true;stop.disabled=false;setStatus('Carla está conectada. Puedes hablar.',true)}else if(st==='failed'||st==='disconnected'||st==='closed'){if(active||st==='failed')cleanup('Conexión interrumpida.')}};
    stream.getTracks().forEach(t=>pc.addTrack(t,stream));
