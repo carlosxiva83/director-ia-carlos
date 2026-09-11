@@ -15,31 +15,11 @@ export default async function handler(req,res){
   try{
     const sdp=await readRawBody(req);
     if(!sdp||!sdp.includes('v=0')) return res.status(400).send('missing_sdp');
-
-    const session={
-      type:'transcription',
-      audio:{
-        input:{
-          noise_reduction:{type:'near_field'},
-          transcription:{
-            model:'gpt-live-transcribe',
-            language:'es',
-            prompt:'Conversación comercial en español de España sobre Nexo Voice, Aura Nexo, citas, reservas, facturas, incidencias, logística y atención telefónica.'
-          },
-          turn_detection:{
-            type:'server_vad',
-            threshold:0.72,
-            prefix_padding_ms:350,
-            silence_duration_ms:850
-          }
-        }
-      }
-    };
-
-    const r=await fetch(OPENAI_REALTIME,{
+    const model=process.env.NEXO_TRANSCRIBE_REALTIME_MODEL||'gpt-realtime-mini';
+    const r=await fetch(`${OPENAI_REALTIME}?model=${encodeURIComponent(model)}`,{
       method:'POST',
-      headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json'},
-      body:JSON.stringify({sdp,session})
+      headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/sdp'},
+      body:sdp
     });
     const answer=await r.text();
     if(!r.ok){
