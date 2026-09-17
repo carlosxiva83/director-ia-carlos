@@ -1,0 +1,39 @@
+{
+  "provider": "ElevenLabs",
+  "purpose": "Nexo Voice working voice library",
+  "voices": [
+    {
+      "name": "Carla",
+      "base_voice_lookup": "voice name starts with Alejandra",
+      "gender": "female",
+      "role": "female_primary",
+      "status": "approved",
+      "profile_file": "carla-voice-profile-approved.json",
+      "notes": "Approved reference. Do not modify while tuning other voices."
+    },
+    {
+      "name": "Sara",
+      "base_voice_lookup": "voice name starts with Sara Martin",
+      "gender": "female",
+      "role": "female_secondary",
+      "status": "tuning",
+      "notes": "Second independent female Nexo Voice option. Tune separately from Carla."
+    },
+    {
+      "name": "David Martin",
+      "base_voice_lookup": "voice name starts with David Martin",
+      "gender": "male",
+      "role": "male_candidate",
+      "status": "tuning",
+      "notes": "Male candidate selected for Nexo Voice testing and tuning."
+    },
+    {
+      "name": "Martin Osborne",
+      "base_voice_lookup": "voice name starts with Martin Osborne",
+      "gender": "male",
+      "role": "male_candidate",
+      "status": "tuning",
+      "notes": "Male candidate selected for Nexo Voice testing. Compare available Martin Osborne variants before locking the final profile."
+    }
+  ]
+}
