@@ -1,6 +1,17 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/", "destination": "/index.html" }
-  ]
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/director.js": {
+      "maxDuration": 60
+    },
+    "api/director-voice.js": {
+      "maxDuration": 60
+    }
+  }
 }
